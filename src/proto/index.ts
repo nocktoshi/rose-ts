@@ -18,6 +18,8 @@ import type {
 } from "../types.js";
 import { cheetahPointFromBase58 } from "../crypto/cheetah.js";
 import { U256 } from "../core/u256.js";
+import { lockRootHash } from "../hash/index.js";
+import { tasU64 } from "../noun/belts.js";
 import { jam } from "../noun/index.js";
 
 export { noteFromProtobuf, noteToProtobuf } from "./note.js";
@@ -116,7 +118,7 @@ function lockMerkleProofToPb(lmp: LockMerkleProof): Record<string, unknown> {
     proof: merkleProofToPb(lmp.proof),
   };
   if ("version" in lmp && lmp.version === "full") {
-    return { ...base, lmp_version: "full" };
+    return { ...base, lmp_version: String(tasU64("full")) };
   }
   return base;
 }
@@ -125,11 +127,18 @@ function noteDataToPb(data: NoteData): Record<string, unknown> {
   return { entries: data.map(([key, noun]) => ({ key, blob: [...jam(noun)] })) };
 }
 
+function haxMapToPb(haxMap: Spend1V1["witness"]["hax_map"]): { hash: string; value: number[] }[] {
+  const pairs = Array.isArray(haxMap) ? haxMap : [];
+  return pairs.map(([hash, noun]) => ({
+    hash,
+    value: [...jam(noun)],
+  }));
+}
+
 function seedToPb(seed: SeedV1): Record<string, unknown> {
-  const lockRoot = typeof seed.lock_root === "string" ? seed.lock_root : "";
   return {
     output_source: seed.output_source,
-    lock_root: lockRoot,
+    lock_root: lockRootHash(seed.lock_root),
     note_data: noteDataToPb(seed.note_data),
     gift: { value: seed.gift },
     parent_hash: seed.parent_hash,
@@ -145,7 +154,7 @@ function spendToPb(spend: SpendV1): Record<string, unknown> | null {
         witness: {
           lock_merkle_proof: lockMerkleProofToPb(s.witness.lock_merkle_proof),
           pkh_signature: pkhSignatureToPb(s.witness.pkh_signature),
-          hax: [],
+          hax: haxMapToPb(s.witness.hax_map),
         },
         seeds: (Array.isArray(s.seeds) ? s.seeds : []).map(seedToPb),
         fee: { value: s.fee },

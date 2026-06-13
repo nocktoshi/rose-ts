@@ -102,6 +102,60 @@ describe("parity: grpc client", () => {
     const lmp = req.raw_tx?.spends[0]?.spend?.spend_kind?.witness?.witness?.lock_merkle_proof;
     expect(lmp?.lmp_version).toBe("1819047270");
     expect(lmp?.axis).toBe("3");
+
+    const seed = req.raw_tx?.spends[0]?.spend?.spend_kind?.witness?.seeds[0];
+    expect(seed?.lock_root?.belt_1?.value).not.toBe("0");
+    expect(seed?.gift?.value).toBe("17009691");
+  });
+
+  it("applyWitness keeps hax from spend when witness_data omits it", () => {
+    const settings = RoseTs.txEngineSettingsV1BythosDefault();
+    const builder = new RoseTs.TxBuilder(settings);
+    const note = RoseTs.noteFromProtobuf({
+      note_version: {
+        V1: {
+          version: { value: "1" },
+          origin_page: { value: "1" },
+          name: { first: "4aAqswWFkNi6bey6Ac58QxsmMLV3VAC1LKnXwAaQvhYSZb6epr7aXap", last: "pnCZnNbZ1NGqeP2vSBBzQM3ecpjCoAnmFJH6Z6gGwpfjjBhNtddZqj" },
+          note_data: { entries: [] },
+          assets: { value: "1000" },
+        },
+      },
+    });
+    const hNock = RoseTs.hashPreimage(
+      new Uint8Array([
+        1, 4, 94, 58, 17, 242, 138, 59, 221, 17, 3, 236, 145, 212, 172, 51, 41, 91, 17, 50, 64,
+        143, 128, 4, 27, 38, 225, 48, 160, 7, 16, 192, 24, 8, 250, 63, 48, 130, 139, 12, 240,
+        187, 33, 147, 240, 145, 120, 104, 131, 3, 244, 36, 50, 199, 221, 55, 56, 152, 120, 0, 129,
+        72, 209, 194, 114, 52, 110, 8, 86, 192, 239, 178, 176, 65, 126, 22, 54, 38, 6,
+      ])
+    );
+    const lock = RoseTs.htlcOrLock(
+      hNock,
+      "ey4Lwommv6EeDfZzMrNKf7pJzShfoiCxJh7hEcoKu9TfzaXxngcwHJ",
+      "gFz59ms5byUAp4kbgatYHZFve3ZxMSqspGPUVweyP1u4XQCzLjsdKp",
+      1000n
+    );
+    const spend = RoseTs.SpendBuilder.new(note, lock, 0, null);
+    spend.addPreimage(
+      new Uint8Array([
+        1, 4, 94, 58, 17, 242, 138, 59, 221, 17, 3, 236, 145, 212, 172, 51, 41, 91, 17, 50, 64,
+        143, 128, 4, 27, 38, 225, 48, 160, 7, 16, 192, 24, 8, 250, 63, 48, 130, 139, 12, 240,
+        187, 33, 147, 240, 145, 120, 104, 131, 3, 244, 36, 50, 199, 221, 55, 56, 152, 120, 0, 129,
+        72, 209, 194, 114, 52, 110, 8, 86, 192, 239, 178, 176, 65, 126, 22, 54, 38, 6,
+      ])
+    );
+    builder.spend(spend);
+    const tx = builder.build();
+    const signed = structuredClone(tx);
+    const hax = signed.witness_data.data[0][1].hax_map;
+    signed.witness_data.data[0][1].hax_map = [];
+    signed.spends[0][1].witness.hax_map = hax;
+    const raw = RoseTs.nockchainTxToRawTx(signed);
+    const witness = raw.spends[0][1];
+    if (witness.tag !== 1) throw new Error("expected witness spend");
+    expect(witness.witness.hax_map).toHaveLength(1);
+    void settings;
   });
 
   it("generated RawTransaction encodes WalletSendTransaction protobuf (not JSON)", async () => {

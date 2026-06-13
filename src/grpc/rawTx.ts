@@ -46,6 +46,7 @@ import type {
   TimeLockRangeAbsolute,
   TimeLockRangeRelative,
 } from "./gen/nockchain/common/v1/blockchain.js";
+import { lockRootHash } from "../hash/index.js";
 import { digestToGrpcHash, nameToGrpcName } from "./convert.js";
 
 function belt(value: bigint | number | string): { value: string } {
@@ -210,13 +211,9 @@ function sourceToGrpc(source: SeedV1["output_source"]): Source | undefined {
   return out;
 }
 
-function lockRootDigest(lockRoot: SeedV1["lock_root"]): Digest {
-  return typeof lockRoot === "string" ? lockRoot : "";
-}
-
 function seedToGrpc(seed: SeedV1): Seed {
   const out: Seed = {
-    lock_root: digestToGrpcHash(lockRootDigest(seed.lock_root)),
+    lock_root: digestToGrpcHash(lockRootHash(seed.lock_root)),
     note_data: noteDataToGrpc(seed.note_data),
     gift: { value: seed.gift },
     parent_hash: digestToGrpcHash(seed.parent_hash),

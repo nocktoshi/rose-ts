@@ -53,6 +53,15 @@ export function applyWitness(
     if (spend.tag !== 1) return [name, spend] as [Name, SpendV1];
     const witness = witnessByName.get(nameKey(name));
     if (!witness) return [name, spend] as [Name, SpendV1];
-    return [name, { ...spend, witness: cloneWitness(witness) }] as [Name, SpendV1];
+    const merged = cloneWitness(witness);
+    const localHax = spend.witness.hax_map;
+    if (
+      (!merged.hax_map || merged.hax_map.length === 0) &&
+      Array.isArray(localHax) &&
+      localHax.length > 0
+    ) {
+      merged.hax_map = [...localHax];
+    }
+    return [name, { ...spend, witness: merged }] as [Name, SpendV1];
   });
 }
