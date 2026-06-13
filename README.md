@@ -1,4 +1,4 @@
-# @nockchain/rose-ts
+# rose-ts
 
 Pure TypeScript Nockchain wallet primitives — a curated drop-in for protocol-facing APIs in `@nockchain/rose-wasm`, without a WebAssembly runtime.
 
