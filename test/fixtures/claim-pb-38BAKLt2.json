@@ -1,0 +1,297 @@
+{
+  "version": {
+    "value": "1"
+  },
+  "id": "6xefAkmuxMmKxPCxvAc6rkWqD1uZ9buXk8tzthuzjvArhLGX7mBRA84",
+  "spends": [
+    {
+      "name": {
+        "first": "3mCt7nT11XNGQmEvpaSSaU7QnkPpi3dy8Nf6cyabb4UxCU2bKjWoxN2",
+        "last": "5v7pxzfwPpNeyQfiydS1dXqEd5DueE5bXT8cMivSj8JnTFREgRgbbgi"
+      },
+      "spend": {
+        "spend_kind": {
+          "Witness": {
+            "witness": {
+              "lock_merkle_proof": {
+                "spend_condition": {
+                  "primitives": [
+                    {
+                      "primitive": {
+                        "Pkh": {
+                          "m": 1,
+                          "hashes": [
+                            "8s29XUK8Do7QWt2MHfPdd1gDSta6db4c3bQrxP1YdJNfXpL3WPzTT5"
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "primitive": {
+                        "Hax": {
+                          "hashes": [
+                            {
+                              "belt_1": {
+                                "value": "7906974943744008556"
+                              },
+                              "belt_2": {
+                                "value": "6617745800764501611"
+                              },
+                              "belt_3": {
+                                "value": "1634279608083904168"
+                              },
+                              "belt_4": {
+                                "value": "15986293209788110445"
+                              },
+                              "belt_5": {
+                                "value": "3079838801138465838"
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                },
+                "axis": 6,
+                "proof": {
+                  "root": "2A9bkDu2fSJZN7edmhZD3BgyQJYMJL4zvEt7DfRZ3ftq3PUYmbYehNs",
+                  "path": [
+                    "4CtGH1AkQX34HraBg9rzJ4BkG6qKnaShbMsSnnJg6eC61CZqRHNwdQt",
+                    "8jQTGUXQH381Dq4CKUpdsieT2vkw3jGRzQYg4WPhDw4HCmyYTUeaYPG"
+                  ]
+                },
+                "lmp_version": 1819047270
+              },
+              "pkh_signature": {
+                "entries": [
+                  {
+                    "hash": "8s29XUK8Do7QWt2MHfPdd1gDSta6db4c3bQrxP1YdJNfXpL3WPzTT5",
+                    "pubkey": {
+                      "value": {
+                        "x": {
+                          "belt_1": {
+                            "value": "9742120347922570733"
+                          },
+                          "belt_2": {
+                            "value": "7172134143161497029"
+                          },
+                          "belt_3": {
+                            "value": "13752990376315485127"
+                          },
+                          "belt_4": {
+                            "value": "16218355081430265339"
+                          },
+                          "belt_5": {
+                            "value": "13500707885951173747"
+                          },
+                          "belt_6": {
+                            "value": "5360143654045681557"
+                          }
+                        },
+                        "y": {
+                          "belt_1": {
+                            "value": "11723526618108448898"
+                          },
+                          "belt_2": {
+                            "value": "13132607793143460349"
+                          },
+                          "belt_3": {
+                            "value": "4848632966693356779"
+                          },
+                          "belt_4": {
+                            "value": "428030307283633308"
+                          },
+                          "belt_5": {
+                            "value": "12004657580423825270"
+                          },
+                          "belt_6": {
+                            "value": "716199237807648642"
+                          }
+                        },
+                        "inf": false
+                      }
+                    },
+                    "signature": {
+                      "chal": {
+                        "belt_1": {
+                          "value": "2255943550"
+                        },
+                        "belt_2": {
+                          "value": "305159501"
+                        },
+                        "belt_3": {
+                          "value": "2164673687"
+                        },
+                        "belt_4": {
+                          "value": "3481139390"
+                        },
+                        "belt_5": {
+                          "value": "1683773895"
+                        },
+                        "belt_6": {
+                          "value": "870209589"
+                        },
+                        "belt_7": {
+                          "value": "4206526812"
+                        },
+                        "belt_8": {
+                          "value": "864339343"
+                        }
+                      },
+                      "sig": {
+                        "belt_1": {
+                          "value": "3321688647"
+                        },
+                        "belt_2": {
+                          "value": "1633258035"
+                        },
+                        "belt_3": {
+                          "value": "2538007083"
+                        },
+                        "belt_4": {
+                          "value": "3814182492"
+                        },
+                        "belt_5": {
+                          "value": "3260313179"
+                        },
+                        "belt_6": {
+                          "value": "1273072701"
+                        },
+                        "belt_7": {
+                          "value": "2017912757"
+                        },
+                        "belt_8": {
+                          "value": "2005379811"
+                        }
+                      }
+                    }
+                  }
+                ]
+              },
+              "hax": [
+                {
+                  "hash": {
+                    "belt_1": {
+                      "value": "7906974943744008556"
+                    },
+                    "belt_2": {
+                      "value": "6617745800764501611"
+                    },
+                    "belt_3": {
+                      "value": "1634279608083904168"
+                    },
+                    "belt_4": {
+                      "value": "15986293209788110445"
+                    },
+                    "belt_5": {
+                      "value": "3079838801138465838"
+                    }
+                  },
+                  "value": [
+                    1,
+                    254,
+                    36,
+                    203,
+                    232,
+                    76,
+                    74,
+                    149,
+                    203,
+                    117,
+                    0,
+                    1,
+                    183,
+                    227,
+                    15,
+                    179,
+                    38,
+                    19,
+                    139,
+                    246,
+                    0,
+                    2,
+                    240,
+                    132,
+                    123,
+                    235,
+                    133,
+                    64,
+                    139,
+                    163,
+                    1,
+                    4,
+                    32,
+                    170,
+                    95,
+                    152,
+                    148,
+                    238,
+                    238,
+                    10,
+                    3,
+                    8,
+                    100,
+                    66,
+                    77,
+                    68,
+                    190,
+                    129,
+                    110,
+                    58,
+                    7,
+                    16,
+                    40,
+                    216,
+                    207,
+                    190,
+                    33,
+                    74,
+                    21,
+                    91,
+                    15,
+                    240,
+                    71,
+                    179,
+                    4,
+                    108,
+                    225,
+                    99,
+                    50,
+                    34,
+                    1,
+                    189,
+                    196,
+                    204,
+                    246,
+                    181,
+                    152,
+                    89,
+                    88,
+                    13
+                  ]
+                }
+              ]
+            },
+            "seeds": [
+              {
+                "output_source": null,
+                "lock_root": "A3LoWjxurwiyzhkv8sgDv2MVu9PwgWHmqoncXw9GEQ5M3qx46svvadE",
+                "note_data": {
+                  "entries": []
+                },
+                "gift": {
+                  "value": "2899968"
+                },
+                "parent_hash": "83iP6Yyhx9zNNMC9S5KRSemEhhrGYQoetqRBLGBM22G3WrtSvEnbEm3"
+              }
+            ],
+            "fee": {
+              "value": "376832"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

@@ -22,6 +22,7 @@ import type { Noun } from "../types.js";
 import { cheetahPointToBase58 } from "../crypto/cheetah.js";
 import type { CheetahPoint, F6lt } from "../crypto/cheetah.js";
 import { U256 } from "../core/u256.js";
+import { digestFromProtobuf } from "./digest.js";
 
 function required<T>(value: T | null | undefined, field: string): T {
   if (value === null || value === undefined) {
@@ -35,6 +36,9 @@ function digestField(value: unknown, field: string): Digest {
   if (value && typeof value === "object" && "value" in value) {
     const v = (value as { value?: string }).value;
     if (typeof v === "string") return v as Digest;
+  }
+  if (value && typeof value === "object" && "belt_1" in value) {
+    return digestFromProtobuf(value as Parameters<typeof digestFromProtobuf>[0]);
   }
   throw new Error(`invalid digest field: ${field}`);
 }
@@ -131,7 +135,12 @@ function lockMerkleProofFromPb(pb: {
     path: (proofPb.path ?? []).map((h) => digestField(h, "MerkleProof.path")),
   };
   const axis = pb.axis ?? 1;
-  if (pb.lmp_version === "full") {
+  const lmpVersion = pb.lmp_version;
+  const isFull =
+    lmpVersion === "full" ||
+    lmpVersion === "1819047270" ||
+    (lmpVersion !== undefined && BigInt(lmpVersion) === 1_819_047_270n);
+  if (isFull) {
     return { version: "full", spend_condition: spendCondition, axis, proof };
   }
   if (axis === 1) {

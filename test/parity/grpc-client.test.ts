@@ -91,6 +91,7 @@ describe("parity: grpc client", () => {
       ),
     ]);
     const spend = RoseTs.SpendBuilder.new(note, lock, 0, buyerLock);
+    spend.computeRefund(false);
     const builder = new RoseTs.TxBuilder(settings);
     builder.spend(spend);
     builder.recalcAndSetFee(false);
@@ -101,11 +102,15 @@ describe("parity: grpc client", () => {
     const req = WalletSendTransactionRequest.decode(frame.subarray(5, 5 + bodyLen));
     const lmp = req.raw_tx?.spends[0]?.spend?.spend_kind?.witness?.witness?.lock_merkle_proof;
     expect(lmp?.lmp_version).toBe("1819047270");
-    expect(lmp?.axis).toBe("3");
+    expect(lmp?.axis).toBe("6");
 
-    const seed = req.raw_tx?.spends[0]?.spend?.spend_kind?.witness?.seeds[0];
+    const witnessSpend = req.raw_tx?.spends[0]?.spend?.spend_kind?.witness;
+    const seed = witnessSpend?.seeds[0];
     expect(seed?.lock_root?.belt_1?.value).not.toBe("0");
-    expect(seed?.gift?.value).toBe("17009691");
+    // The lone refund seed pays the fee, so gift + fee must equal the note's assets.
+    expect(BigInt(seed?.gift?.value ?? "0") + BigInt(witnessSpend?.fee?.value ?? "0")).toBe(
+      17009691n
+    );
   });
 
   it("applyWitness keeps hax from spend when witness_data omits it", () => {

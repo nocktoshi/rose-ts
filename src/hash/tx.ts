@@ -21,7 +21,8 @@ import {
   encodeName,
   encodeTuple,
 } from "../noun/encode.js";
-import { hashNounWhole } from "./structural.js";
+import { hashNounStructural, hashNounWhole } from "./structural.js";
+import { fromWire } from "../noun/types.js";
 import { hashNoteData as hashNoteDataEntries } from "./note.js";
 import type {
   Digest,
@@ -38,6 +39,7 @@ import type {
   Source,
   SpendV1,
   SpendsV1,
+  Noun,
   Witness,
 } from "../types.js";
 import type { DigestBelts } from "../core/digest.js";
@@ -208,11 +210,27 @@ function hashPkhSignature(
   );
 }
 
+// Witness hax_map values use structural hash-noun (node hashable-noun), not whole-noun varlen.
+function hashNounValue(noun: Noun): DigestBelts {
+  return digestFromBase58(hashNounStructural(fromWire(noun)));
+}
+
+function hashHaxMap(map: Witness["hax_map"]): DigestBelts {
+  const pairs = Array.isArray(map) ? map : [];
+  if (pairs.length === 0) return hashU64(0n);
+  const tree = buildZTree(
+    pairs.map(([key, value]) => ({ key, value })),
+    (e) => e.key,
+    encodeDigest
+  );
+  return hashZNode(tree, (e) => hashNested(hashDigest(e.key), hashNounValue(e.value)));
+}
+
 function hashWitnessBelts(w: Witness): DigestBelts {
   return hashNested(
     hashLockMerkleProof(w.lock_merkle_proof),
     hashPkhSignature(w.pkh_signature),
-    hashU64(0n),
+    hashHaxMap(w.hax_map),
     hashU64(0n)
   );
 }

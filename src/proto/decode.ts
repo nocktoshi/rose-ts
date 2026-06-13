@@ -1,4 +1,5 @@
 import type { Digest, LockPrimitive, LockTim, Pkh, SpendCondition, TimelockRange } from "../types.js";
+import { digestFromProtobuf } from "./digest.js";
 
 function required<T>(value: T | null | undefined, field: string): T {
   if (value === null || value === undefined) {
@@ -27,8 +28,16 @@ function lockTimFromPb(pb: {
   };
 }
 
-function pkhFromPb(pb: { m: number; hashes: string[] }): Pkh {
-  return { m: pb.m, hashes: pb.hashes as Pkh["hashes"] };
+function digestFromPbField(value: unknown): Digest {
+  if (typeof value === "string") return value as Digest;
+  if (value && typeof value === "object" && "belt_1" in value) {
+    return digestFromProtobuf(value as Parameters<typeof digestFromProtobuf>[0]);
+  }
+  throw new Error("invalid digest in lock primitive");
+}
+
+function pkhFromPb(pb: { m: number; hashes: unknown[] }): Pkh {
+  return { m: pb.m, hashes: pb.hashes.map(digestFromPbField) as Pkh["hashes"] };
 }
 
 export function lockPrimitiveFromProtobuf(pb: {
@@ -43,8 +52,8 @@ export function lockPrimitiveFromProtobuf(pb: {
     return { tag: "tim", ...lockTimFromPb(prim["Tim"] as Parameters<typeof lockTimFromPb>[0]) };
   }
   if ("Hax" in prim) {
-    const hax = prim["Hax"] as { hashes: string[] };
-    return { tag: "hax", preimages: hax.hashes as Digest[] };
+    const hax = prim["Hax"] as { hashes: unknown[] };
+    return { tag: "hax", preimages: hax.hashes.map(digestFromPbField) };
   }
   if ("Burn" in prim) {
     return { tag: "brn" };

@@ -87,38 +87,6 @@ export function lockSpendCondition(lock: Lock, index: number): SpendCondition {
   }
 }
 
-export function lockLeafCount(lock: Lock): number {
-  if (Array.isArray(lock)) return 1;
-  switch (lock.tag) {
-    case 2:
-      return 1;
-    case 4:
-      return 2;
-    case 8:
-      return 4;
-    case 16:
-      return 8;
-    default:
-      throw new Error(`unsupported lock tag ${(lock as { tag: number }).tag}`);
-  }
-}
-
-export function lockHashablePair(lock: Lock): [Lock, Lock] | null {
-  if (Array.isArray(lock)) return null;
-  switch (lock.tag) {
-    case 2:
-      return [lock.p as Lock, lock.q as Lock];
-    case 4:
-      return [lock.p as Lock, lock.q as Lock];
-    case 8:
-      return [lock.p as Lock, lock.q as Lock];
-    case 16:
-      return [lock.p as Lock, lock.q as Lock];
-    default:
-      throw new Error(`unsupported lock tag ${(lock as { tag: number }).tag}`);
-  }
-}
-
 export function lockRootDigest(lock: Lock): Digest {
   if (Array.isArray(lock)) {
     return hashToDigest(hashSpendCondition(lock));

@@ -58,6 +58,7 @@ describe("parity: simpleSpend HTLC / multisig variants", () => {
   });
 
   it("low-level HTLC claim spend recalcAndSetFee after addPreimage", async () => {
+    const wasm = await getWasm();
     const settings = RoseTs.txEngineSettingsV1BythosDefault();
     const hNock = RoseTs.hashPreimage(HAX_PREIMAGE_JAM);
     const lock = RoseTs.htlcOrLock(hNock, BUYER_PKH, SELLER_PKH, 1000n);
@@ -85,6 +86,24 @@ describe("parity: simpleSpend HTLC / multisig variants", () => {
     const tx = builder.build();
     const witness = mustAt(tx.witness_data.data, 0)[1];
     expect(mustAt(witness.hax_map, 0)[0]).toBe(HAX_PREIMAGE_DIGEST);
+
+    const wasmSpend = new wasm.SpendBuilder(note, lock, 0, buyerLock);
+    wasmSpend.seed(
+      wasm.seedV1NewSinglePkh(BUYER_PKH, "17009691", wasm.noteHash(note), false)
+    );
+    wasmSpend.addPreimage(HAX_PREIMAGE_JAM);
+    wasmSpend.computeRefund(false);
+    const wasmBuilder = new wasm.TxBuilder(settings);
+    wasmBuilder.spend(wasmSpend);
+    wasmBuilder.recalcAndSetFee(false);
+    const wasmRaw = wasm.nockchainTxToRawTx(wasmBuilder.build());
+    const tsRaw = RoseTs.nockchainTxToRawTx(tx);
+    expectParity(
+      "rawTxV1CalcId on wasm raw tx",
+      wasm.rawTxV1CalcId(wasmRaw),
+      RoseTs.rawTxV1CalcId(wasmRaw as never)
+    );
+    expectParity("rawTxV1CalcId HTLC claim with hax", wasm.rawTxV1CalcId(wasmRaw), RoseTs.rawTxV1CalcId(tsRaw));
   });
 
   it("simpleSpendHtlc claim attaches structural hax preimage", async () => {
