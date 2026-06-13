@@ -11,7 +11,7 @@ import {
   hashTuple,
   hashU64,
 } from "../core/hashable.js";
-import { buildZTree, hashZNode } from "../core/zbase.js";
+import { buildZTree, hashZNode, type ZNode } from "../core/zbase.js";
 import { encodeNoteData } from "../noun/codec.js";
 import { cheetahPointFromBase58, cheetahPointHash } from "../crypto/cheetah.js";
 import { U256 } from "../core/u256.js";
@@ -175,6 +175,42 @@ export function hashSeedV1(seed: SeedV1): DigestBelts {
 function hashSeedsV1(seeds: SeedV1[]): DigestBelts {
   const tree = buildZTree(seeds, (s) => s, encodeSeedNoun);
   return hashZNode(tree, hashSeedV1);
+}
+
+/** Canonical wire shape for a seed — Rust `SeedV1` always carries every field,
+ *  so externally-built seeds (which may omit `output_source`/`note_data`) must be
+ *  filled in or the wasm/node serde rejects the tx. */
+function normalizeSeedV1(seed: SeedV1): SeedV1 {
+  return {
+    output_source: seed.output_source ?? null,
+    lock_root: seed.lock_root,
+    note_data: seed.note_data ?? [],
+    gift: seed.gift,
+    parent_hash: seed.parent_hash,
+  };
+}
+
+/** ZBase iterates reverse-in-order (descending BST key), so the on-the-wire
+ *  seed array is right→node→left of the treap. */
+function reverseInOrderSeeds(node: ZNode<SeedV1> | null, out: SeedV1[]): void {
+  if (!node) return;
+  reverseInOrderSeeds(node.right, out);
+  out.push(node.entry);
+  reverseInOrderSeeds(node.left, out);
+}
+
+/**
+ * Seeds in canonical `SeedsV1` (ZSet) form for the wire: every field present
+ * (output_source/note_data defaulted) and ordered exactly as Rust's ZSet
+ * iterates — so a NockchainTx built here deserializes in wasm / the wallet / the
+ * node identically. `SpendBuilder.seed()` accepts loose `{lock_root, gift, …}`
+ * objects, so without this the built tx can omit `output_source` and be rejected.
+ */
+export function canonicalSeedsV1(seeds: SeedV1[]): SeedV1[] {
+  const tree = buildZTree(seeds.map(normalizeSeedV1), (s) => s, encodeSeedNoun);
+  const out: SeedV1[] = [];
+  reverseInOrderSeeds(tree, out);
+  return out;
 }
 
 function hashOutputSource(source: Source | null | undefined): DigestBelts {

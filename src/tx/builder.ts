@@ -36,7 +36,7 @@ import {
 import { encodeLock } from "../noun/codec.js";
 import { toWire } from "../noun/types.js";
 import type { OutputNoteData } from "./types.js";
-import { hashSpendV1SigHash, rawTxV1CalcId } from "../hash/tx.js";
+import { canonicalSeedsV1, hashSpendV1SigHash, rawTxV1CalcId } from "../hash/tx.js";
 import { PrivateKey } from "../crypto/privateKey.js";
 import { hashPublicKey } from "../crypto/index.js";
 import { cheetahPointToBase58, publicKeyFromBeBytes } from "../crypto/cheetah.js";
@@ -761,6 +761,11 @@ export class TxBuilder {
 
     for (const sb of this.spends.values()) {
       const spend = structuredClone(sb.spend);
+      // Seeds may have been added as loose objects (e.g. omitting output_source);
+      // emit them in canonical Rust `SeedsV1` shape + ZSet order so the wasm /
+      // wallet / node serde accepts the tx and the id is computed over the same
+      // bytes everyone else sees.
+      if (spend.tag === 1) spend.seeds = canonicalSeedsV1(spend.seeds);
       fullSpends.push([sb.noteInfo.name, spend]);
 
       if (spend.tag === 1) {
