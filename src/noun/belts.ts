@@ -8,6 +8,15 @@ export function tas(s: string): NounTree {
   return atom(UBig.fromLeBytes(bytes));
 }
 
+/** TAS atom as u64 (nockchain `tas!(b"...")` / protobuf `lmp_version`). */
+export function tasU64(s: string): bigint {
+  const atom = tas(s);
+  if (atom.tag !== "atom") throw new Error("tas must be atom");
+  const v = atom.value.tryIntoU64();
+  if (v === null) throw new Error("tas atom too large for u64");
+  return v;
+}
+
 /** Belt sequence as improper list (no trailing 0). */
 export function beltSeqToNoun(belts: bigint[]): NounTree {
   if (belts.length === 0) return atom(UBig.zero());

@@ -55,6 +55,55 @@ describe("parity: grpc client", () => {
     expect(balance.notes).toEqual([]);
   });
 
+  it("full lock merkle proof encodes lmp_version as tas(%full)", async () => {
+    const settings = RoseTs.txEngineSettingsV1BythosDefault();
+    const hNock = RoseTs.hashPreimage(
+      new Uint8Array([
+        1, 4, 94, 58, 17, 242, 138, 59, 221, 17, 3, 236, 145, 212, 172, 51, 41, 91, 17, 50, 64,
+        143, 128, 4, 27, 38, 225, 48, 160, 7, 16, 192, 24, 8, 250, 63, 48, 130, 139, 12, 240,
+        187, 33, 147, 240, 145, 120, 104, 131, 3, 244, 36, 50, 199, 221, 55, 56, 152, 120, 0, 129,
+        72, 209, 194, 114, 52, 110, 8, 86, 192, 239, 178, 176, 65, 126, 22, 54, 38, 6,
+      ])
+    );
+    const lock = RoseTs.htlcOrLock(
+      hNock,
+      "8s29XUK8Do7QWt2MHfPdd1gDSta6db4c3bQrxP1YdJNfXpL3WPzTT5",
+      "gFz59ms5byUAp4kbgatYHZFve3ZxMSqspGPUVweyP1u4XQCzLjsdKp",
+      83000n
+    );
+    const note = RoseTs.noteFromProtobuf({
+      note_version: {
+        V1: {
+          version: { value: "1" },
+          origin_page: { value: "86402" },
+          name: {
+            first: "3cz3rZkJoucX7dvaZyivJhG7RebWzqAkD1vUioMg5X5aQcGiaPs2AKM",
+            last: "CLRdUQh2bax3Jp2kLDvJRXG5kR25bbrjccMZqpiBwV7sbeWdNBMMDJB",
+          },
+          note_data: { entries: [] },
+          assets: { value: "17009691" },
+        },
+      },
+    });
+    const buyerLock = RoseTs.lockFromList([
+      RoseTs.spendConditionNewPkh(
+        RoseTs.pkhSingle("8s29XUK8Do7QWt2MHfPdd1gDSta6db4c3bQrxP1YdJNfXpL3WPzTT5")
+      ),
+    ]);
+    const spend = RoseTs.SpendBuilder.new(note, lock, 0, buyerLock);
+    const builder = new RoseTs.TxBuilder(settings);
+    builder.spend(spend);
+    builder.recalcAndSetFee(false);
+    const raw = RoseTs.nockchainTxToRawTx(builder.build());
+
+    const frame = encodeWalletSendTransaction(raw.id, raw as never);
+    const bodyLen = (frame[1] << 24) | (frame[2] << 16) | (frame[3] << 8) | frame[4];
+    const req = WalletSendTransactionRequest.decode(frame.subarray(5, 5 + bodyLen));
+    const lmp = req.raw_tx?.spends[0]?.spend?.spend_kind?.witness?.witness?.lock_merkle_proof;
+    expect(lmp?.lmp_version).toBe("1819047270");
+    expect(lmp?.axis).toBe("3");
+  });
+
   it("generated RawTransaction encodes WalletSendTransaction protobuf (not JSON)", async () => {
     const wasm = await getWasm();
     const pb = JSON.parse(readFileSync(join(FIXTURE_DIR, "test.json"), "utf8"));

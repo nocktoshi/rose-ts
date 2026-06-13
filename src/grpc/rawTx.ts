@@ -2,6 +2,7 @@ import { mustAt } from "../core/must.js";
 import { U256 } from "../core/u256.js";
 import { cheetahPointFromBase58 } from "../crypto/cheetah.js";
 import { jam } from "../noun/index.js";
+import { tasU64 } from "../noun/belts.js";
 import type {
   Digest,
   LockMerkleProof,
@@ -171,7 +172,9 @@ function lockMerkleProofToGrpc(lmp: LockMerkleProof): GrpcLockMerkleProof {
     axis: String(axis),
     proof: merkleProofToGrpc(lmp.proof),
   };
-  if ("version" in lmp && lmp.version === "full") out.lmp_version = "1";
+  if ("version" in lmp && lmp.version === "full") {
+    out.lmp_version = String(tasU64("full"));
+  }
   return out;
 }
 
