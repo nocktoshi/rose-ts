@@ -5,7 +5,7 @@ import {
   type DigestBelts,
 } from "./digest.js";
 import { hashPair, hashU64 } from "./hashable.js";
-import { nounOrderDigest } from "../noun/encode.js";
+import { encodeDigest, nounOrderDigest } from "../noun/encode.js";
 import type { NounTree } from "../noun/types.js";
 
 export interface ZNode<E> {
@@ -110,4 +110,20 @@ export function hashZNode<E>(
   const right = hashZNode(node.right, entryHash);
   const entry = entryHash(node.entry);
   return hashPair(entry, hashPair(left, right));
+}
+
+/**
+ * Hash a `ZSet<Digest>` (e.g. pkh `hashes`, hax `preimages`) as a treap.
+ *
+ * The set is built deterministically from the digest keys (treap ordering by
+ * `key.to_noun().hash()`), so insertion order is irrelevant. The entry hash is
+ * the digest identity, matching `ZSetEntry::hashable_pair == &key`.
+ */
+export function hashZSetDigests(digests: readonly string[]): DigestBelts {
+  const tree = buildZTree(
+    digests.map((key) => ({ key })),
+    (e) => e.key,
+    encodeDigest
+  );
+  return hashZNode(tree, (e) => digestFromBase58(e.key));
 }

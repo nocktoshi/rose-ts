@@ -15,6 +15,10 @@ import type {
   Lock,
   LockMerkleProof,
   LockPrimitive,
+  LockV2,
+  LockV4,
+  LockV8,
+  LockV16,
   NoteData,
   Pkh,
   PkhSignature,
@@ -82,22 +86,34 @@ export function encodeSpendCondition(sc: SpendCondition): NounTree {
   return encodeVec(sc, encodeLockPrimitive);
 }
 
+// Inner balanced subtrees encode without a version tag (they are struct fields,
+// not `Lock` enum variants); only the top-level `Lock::Vn` adds the tag leaf.
+function encodeLockV2Inner(v: LockV2): NounTree {
+  return encodeTuple([encodeSpendCondition(v.p), encodeSpendCondition(v.q)]);
+}
+function encodeLockV4Inner(v: LockV4): NounTree {
+  return encodeTuple([encodeLockV2Inner(v.p), encodeLockV2Inner(v.q)]);
+}
+function encodeLockV8Inner(v: LockV8): NounTree {
+  return encodeTuple([encodeLockV4Inner(v.p), encodeLockV4Inner(v.q)]);
+}
+function encodeLockV16Inner(v: LockV16): NounTree {
+  return encodeTuple([encodeLockV8Inner(v.p), encodeLockV8Inner(v.q)]);
+}
+
 export function encodeLock(lock: Lock): NounTree {
   if (Array.isArray(lock)) {
     return encodeSpendCondition(lock);
   }
   switch (lock.tag) {
     case 2:
-      return encodeTuple([encodeSpendCondition(lock.p), encodeSpendCondition(lock.q)]);
+      return cons(encodeAtomU64(2n), encodeLockV2Inner(lock));
     case 4:
-      return encodeTuple([
-        encodeTuple([encodeSpendCondition(lock.p.p), encodeSpendCondition(lock.p.q)]),
-        encodeTuple([encodeSpendCondition(lock.q.p), encodeSpendCondition(lock.q.q)]),
-      ]);
+      return cons(encodeAtomU64(4n), encodeLockV4Inner(lock));
     case 8:
-      return encodeTuple([encodeLock({ tag: 4, ...lock.p }), encodeLock({ tag: 4, ...lock.q })]);
+      return cons(encodeAtomU64(8n), encodeLockV8Inner(lock));
     case 16:
-      return encodeTuple([encodeLock({ tag: 8, ...lock.p }), encodeLock({ tag: 8, ...lock.q })]);
+      return cons(encodeAtomU64(16n), encodeLockV16Inner(lock));
   }
 }
 

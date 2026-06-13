@@ -12,6 +12,7 @@ import {
   hashU64,
 } from "../core/hashable.js";
 import { buildZTree, hashZNode } from "../core/zbase.js";
+import { encodeNoteData } from "../noun/codec.js";
 import { cheetahPointFromBase58, cheetahPointHash } from "../crypto/cheetah.js";
 import { U256 } from "../core/u256.js";
 import {
@@ -134,13 +135,25 @@ function hashNoteData(data: NoteData): DigestBelts {
   return hashNoteDataEntries(data);
 }
 
+/** Noun used for ZSet ordering — must equal Rust `SeedV1::to_noun()`. */
 function encodeSeedNoun(seed: SeedV1) {
-  const lockRoot =
-    typeof seed.lock_root === "string" ? encodeDigest(seed.lock_root) : encodeAtomU64(0n);
+  // LockRoot::Lock encodes as `lock.hash().to_noun()`, i.e. the lock-root hash
+  // digest, not the lock structure; LockRoot::Hash encodes the digest directly.
+  const lockRoot = encodeDigest(hashToDigest(hashLockRoot(seed.lock_root)));
+  // output_source may be null OR absent on manually-constructed seeds (callers
+  // routinely omit it); both mean `None`.
+  const src = seed.output_source;
+  let outputSource = encodeAtomU64(0n);
+  if (src != null && typeof src === "object" && "hash" in src) {
+    outputSource = encodeTuple([
+      encodeAtomU64(0n),
+      encodeTuple([encodeDigest(src.hash), encodeAtomU64(src.is_coinbase ? 0n : 1n)]),
+    ]);
+  }
   return encodeTuple([
-    encodeAtomU64(0n),
+    outputSource,
     lockRoot,
-    encodeAtomU64(0n),
+    encodeNoteData(seed.note_data ?? []),
     encodeAtomU64(BigInt(seed.gift)),
     encodeDigest(seed.parent_hash),
   ]);
@@ -153,7 +166,7 @@ export function hashSeedV1Digest(seed: SeedV1): Digest {
 export function hashSeedV1(seed: SeedV1): DigestBelts {
   return hashNested(
     hashLockRoot(seed.lock_root),
-    hashNoteData(seed.note_data),
+    hashNoteData(seed.note_data ?? []),
     hashNicks(seed.gift),
     hashDigest(seed.parent_hash)
   );
@@ -164,8 +177,8 @@ function hashSeedsV1(seeds: SeedV1[]): DigestBelts {
   return hashZNode(tree, hashSeedV1);
 }
 
-function hashOutputSource(source: Source | null): DigestBelts {
-  if (source === null) return hashU64(0n);
+function hashOutputSource(source: Source | null | undefined): DigestBelts {
+  if (source == null) return hashU64(0n);
   if (!("hash" in source)) {
     throw new Error("Parent source variant is not hashable as legacy Source");
   }
@@ -177,7 +190,7 @@ function hashSigHashSeedV1(seed: SeedV1): DigestBelts {
   return hashNested(
     hashOutputSource(seed.output_source),
     hashLockRoot(seed.lock_root),
-    hashNoteData(seed.note_data),
+    hashNoteData(seed.note_data ?? []),
     hashNicks(seed.gift),
     hashDigest(seed.parent_hash)
   );

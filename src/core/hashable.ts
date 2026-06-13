@@ -11,6 +11,7 @@ import {
   type DigestBelts,
 } from "./digest.js";
 import { hashFixed, hashVarlen } from "./tip5/index.js";
+import { hashZSetDigests } from "./zbase.js";
 import type { Digest, Hax, Lock, LockPrimitive, LockRoot, LockTim, Nicks, Pkh } from "../types.js";
 
 function beltsToDigest(belts: DigestBelts): Digest {
@@ -52,26 +53,11 @@ function hashOption<T>(value: T | null | undefined, hashSome: (v: T) => DigestBe
   return hashTuple(hashU64(0n), hashSome(value));
 }
 
-function hashZBaseEmpty(): DigestBelts {
-  return hashU64(0n);
-}
-
 function digestListFromWire(hashes: Pkh["hashes"] | readonly Digest[]): Digest[] {
   if (Array.isArray(hashes)) {
     return hashes as Digest[];
   }
   return [];
-}
-
-function hashZSetDigests(digests: readonly Digest[]): DigestBelts {
-  if (digests.length === 0) {
-    return hashZBaseEmpty();
-  }
-  if (digests.length === 1) {
-    const key = hashDigestIdentity(mustAt(digests, 0));
-    return hashTuple(key, hashTuple(hashZBaseEmpty(), hashZBaseEmpty()));
-  }
-  throw new Error("multi-element ZSet hashing not implemented");
 }
 
 export function hashPkh(pkh: Pkh | { m: number; hashes: Pkh["hashes"] | readonly Digest[] }): DigestBelts {

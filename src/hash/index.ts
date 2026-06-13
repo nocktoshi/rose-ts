@@ -29,6 +29,7 @@ import {
   hashU64 as hashU64Belts,
 } from "../core/hashable.js";
 import { fromWire, type NounWire } from "../noun/types.js";
+import { noteDataPushPkh } from "./note.js";
 
 export function hashPreimage(preimageJam: Uint8Array): Digest {
   const noun = cue(preimageJam);
@@ -194,14 +195,18 @@ export function seedV1NewSinglePkh(
   pkh: Digest,
   gift: Nicks,
   parentHash: Digest,
-  _includeLockData: boolean
+  includeLockData: boolean
 ): SeedV1 {
-  void _includeLockData;
-  const lock = spendConditionNewPkh(pkhSingle(pkh));
+  const pkhObj = pkhSingle(pkh);
+  const lock = spendConditionNewPkh(pkhObj);
+  let note_data = noteDataEmpty();
+  if (includeLockData) {
+    note_data = noteDataPushPkh(note_data, pkhObj);
+  }
   return {
     output_source: null,
     lock_root: lock,
-    note_data: noteDataEmpty(),
+    note_data,
     gift,
     parent_hash: parentHash,
   };
