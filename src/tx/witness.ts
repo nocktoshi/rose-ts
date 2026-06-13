@@ -1,5 +1,6 @@
 import { proveHashableLock } from "../core/merkle.js";
 import { lockHeight, lockSpendCondition } from "../core/lock.js";
+import { toWire, type NounTree } from "../noun/types.js";
 import type {
   Digest,
   Lock,
@@ -83,15 +84,24 @@ export function witnessWithPkhSignature(
   return { ...witness, pkh_signature: sigs };
 }
 
+function haxPreimageToWire(noun: Noun): Noun {
+  if (typeof noun === "string" || Array.isArray(noun)) return noun;
+  if (noun && typeof noun === "object" && "tag" in noun) {
+    return toWire(noun as NounTree);
+  }
+  return noun;
+}
+
 export function witnessWithHaxPreimage(
   witness: Witness,
   digest: Digest,
   preimageNoun: Noun
 ): Witness {
+  const wire = haxPreimageToWire(preimageNoun);
   const hax = [...witness.hax_map];
   const idx = hax.findIndex(([d]) => d === digest);
-  if (idx >= 0) hax[idx] = [digest, preimageNoun];
-  else hax.push([digest, preimageNoun]);
+  if (idx >= 0) hax[idx] = [digest, wire];
+  else hax.push([digest, wire]);
   return { ...witness, hax_map: hax };
 }
 

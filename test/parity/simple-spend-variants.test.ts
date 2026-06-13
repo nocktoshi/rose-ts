@@ -57,6 +57,36 @@ describe("parity: simpleSpend HTLC / multisig variants", () => {
     }
   });
 
+  it("low-level HTLC claim spend recalcAndSetFee after addPreimage", async () => {
+    const settings = RoseTs.txEngineSettingsV1BythosDefault();
+    const hNock = RoseTs.hashPreimage(HAX_PREIMAGE_JAM);
+    const lock = RoseTs.htlcOrLock(hNock, BUYER_PKH, SELLER_PKH, 1000n);
+    const note = RoseTs.noteFromProtobuf(htlcNotePb("17009691"));
+    const buyerLock = RoseTs.lockFromList([
+      RoseTs.spendConditionNewPkh(RoseTs.pkhSingle(BUYER_PKH)),
+    ]);
+
+    const spend = RoseTs.SpendBuilder.new(note, lock, 0, buyerLock);
+    spend.seed(
+      RoseTs.seedV1NewSinglePkh(
+        BUYER_PKH,
+        "17009691" as RoseTs.Nicks,
+        RoseTs.noteHash(note),
+        false
+      )
+    );
+    expect(spend.addPreimage(HAX_PREIMAGE_JAM)).toBe(HAX_PREIMAGE_DIGEST);
+    spend.computeRefund(false);
+
+    const builder = new RoseTs.TxBuilder(settings);
+    builder.spend(spend);
+    builder.recalcAndSetFee(false);
+    expect(spend.isBalanced()).toBe(true);
+    const tx = builder.build();
+    const witness = mustAt(tx.witness_data.data, 0)[1];
+    expect(mustAt(witness.hax_map, 0)[0]).toBe(HAX_PREIMAGE_DIGEST);
+  });
+
   it("simpleSpendHtlc claim attaches structural hax preimage", async () => {
     const wasm = await getWasm();
     const settings = wasm.txEngineSettingsV1BythosDefault();

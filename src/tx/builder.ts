@@ -249,10 +249,11 @@ export class SpendBuilder {
 
   addPreimage(preimageJam: Uint8Array): Digest | undefined {
     if (this.spend.tag !== 1) return undefined;
-    const noun = cue(preimageJam);
-    if (!noun) return undefined;
+    const tree = cue(preimageJam);
+    if (!tree) return undefined;
     // Hax preimages in locks use structural hash-noun (`hashPreimage` / node hax check).
-    const digest = hashNounStructural(noun) as Digest;
+    const digest = hashNounStructural(tree) as Digest;
+    const noun = toWire(tree);
     const sc = spendConditionFromLmp(this.spend.witness.lock_merkle_proof);
     for (const prim of sc) {
       if (prim.tag === "hax") {
@@ -261,7 +262,7 @@ export class SpendBuilder {
           const hax = Array.isArray(this.spend.witness.hax_map)
             ? [...this.spend.witness.hax_map]
             : [];
-          hax.push([digest, noun as never]);
+          hax.push([digest, noun]);
           this.spend.witness.hax_map = hax;
           return digest;
         }
