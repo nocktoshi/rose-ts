@@ -4,10 +4,7 @@ import {fileURLToPath} from 'node:url';
 import {describe, it} from 'vitest';
 import {getWasm} from './helpers/wasm.js';
 
-const FIXTURE_DIR = join(
-  dirname(fileURLToPath(import.meta.url)),
-  '../../rose-wasm/scripts',
-);
+const FIXTURE_DIR = join(dirname(fileURLToPath(import.meta.url)), './fixtures');
 
 describe('debug raw-tx', () => {
   it('probe wasm shapes', async () => {

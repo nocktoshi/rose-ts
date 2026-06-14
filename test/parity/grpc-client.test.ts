@@ -17,7 +17,7 @@ import {WalletSendTransactionRequest} from '../../src/grpc/gen/nockchain/public/
 
 const FIXTURE_DIR = join(
   dirname(fileURLToPath(import.meta.url)),
-  '../../../rose-wasm/scripts',
+  '../fixtures',
 );
 
 const grpcWebOk = (message: Uint8Array): Uint8Array => {

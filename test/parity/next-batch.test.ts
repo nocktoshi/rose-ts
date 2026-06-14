@@ -9,7 +9,7 @@ import {expectParity} from '../helpers/parity.js';
 
 const FIXTURE_DIR = join(
   dirname(fileURLToPath(import.meta.url)),
-  '../../../rose-wasm/scripts',
+  '../fixtures',
 );
 
 const BUYER_PKH = '9zpwNfGdcPT1QUKw2Fnw2zvftzpAYEjzZfTqGW8KLnf3NmEJ7yR5t2Y';

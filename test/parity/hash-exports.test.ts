@@ -9,7 +9,7 @@ import {HAX_PREIMAGE_JAM} from '../fixtures/hax.js';
 
 const FIXTURE_DIR = join(
   dirname(fileURLToPath(import.meta.url)),
-  '../../../rose-wasm/scripts',
+  '../fixtures',
 );
 
 describe('parity: exported hash helpers', () => {

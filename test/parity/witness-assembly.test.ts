@@ -10,7 +10,7 @@ import {HAX_PREIMAGE_DIGEST, HAX_PREIMAGE_JAM} from '../fixtures/hax.js';
 
 const FIXTURE_DIR = join(
   dirname(fileURLToPath(import.meta.url)),
-  '../../../rose-wasm/scripts',
+  '../fixtures',
 );
 
 const fixtureRaw = async (wasm: Awaited<ReturnType<typeof getWasm>>) => {

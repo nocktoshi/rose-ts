@@ -8,7 +8,7 @@ import {expectParity} from '../helpers/parity.js';
 
 const FIXTURE_DIR = join(
   dirname(fileURLToPath(import.meta.url)),
-  '../../../rose-wasm/scripts',
+  '../fixtures',
 );
 
 describe('parity: protobuf notes', () => {
