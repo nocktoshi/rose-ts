@@ -1,6 +1,6 @@
-import { proveHashableLock } from "../core/merkle.js";
-import { lockHeight, lockSpendCondition } from "../core/lock.js";
-import { toWire, type NounTree } from "../noun/types.js";
+import {proveHashableLock} from '../core/merkle.js';
+import {lockHeight, lockSpendCondition} from '../core/lock.js';
+import {toWire, type NounTree} from '../noun/types.js';
 import type {
   Digest,
   Lock,
@@ -13,17 +13,20 @@ import type {
   SpendCondition,
   SpendV1,
   Witness,
-} from "../types.js";
-import { spendV1NewWitness } from "./spend.js";
+} from '../types.js';
+import {spendV1NewWitness} from './spend.js';
 
 const AXIS_MOLD_HASH =
-  "6mhCSwJQDvbkbiPAUNjetJtVoo1VLtEhmEYoU4hmdGd6ep1F6ayaV4A" as Digest;
+  '6mhCSwJQDvbkbiPAUNjetJtVoo1VLtEhmEYoU4hmdGd6ep1F6ayaV4A' as Digest;
 
 /** Build a lock merkle proof for spending `lock` at spend-condition index `index`. */
-export function lockMerkleProofFromLock(lock: Lock, index: number): LockMerkleProof {
+export const lockMerkleProofFromLock = (
+  lock: Lock,
+  index: number,
+): LockMerkleProof => {
   const spendCondition = lockSpendCondition(lock, index);
   const leafNumber = lockHeight(lock) === 1 ? index : index + 1;
-  const { proof, axis } = proveHashableLock(lock, leafNumber);
+  const {proof, axis} = proveHashableLock(lock, leafNumber);
 
   if (axis === 1n && proof.path.length === 0) {
     return {
@@ -33,28 +36,26 @@ export function lockMerkleProofFromLock(lock: Lock, index: number): LockMerklePr
     };
   }
   return {
-    version: "full",
+    version: 'full',
     spend_condition: spendCondition,
     axis: Number(axis),
     proof,
   };
-}
+};
 
 /** Empty witness shell with only a lock merkle proof (rose-nockchain-types `Witness::new`). */
-export function witnessNew(lock: Lock, index: number): Witness {
-  return witnessFromLockMerkleProof(lockMerkleProofFromLock(lock, index));
-}
+export const witnessNew = (lock: Lock, index: number): Witness =>
+  witnessFromLockMerkleProof(lockMerkleProofFromLock(lock, index));
 
 /** Alias for `witnessNew`. */
-export function witnessFromLock(lock: Lock, index: number): Witness {
-  return witnessNew(lock, index);
-}
+export const witnessFromLock = (lock: Lock, index: number): Witness =>
+  witnessNew(lock, index);
 
-export function witnessFromLockMerkleProof(
+export const witnessFromLockMerkleProof = (
   lockMerkleProof: LockMerkleProof,
   pkhSignature: PkhSignature = [],
-  haxMap: [Digest, Noun][] = []
-): Witness {
+  haxMap: [Digest, Noun][] = [],
+): Witness => {
   void AXIS_MOLD_HASH;
   return {
     lock_merkle_proof: lockMerkleProof,
@@ -62,51 +63,49 @@ export function witnessFromLockMerkleProof(
     hax_map: [...haxMap],
     tim: null,
   };
-}
+};
 
-export function witnessClearSignatures(witness: Witness): Witness {
-  return {
-    ...witness,
-    pkh_signature: [],
-    hax_map: [],
-  };
-}
+export const witnessClearSignatures = (witness: Witness): Witness => ({
+  ...witness,
+  pkh_signature: [],
+  hax_map: [],
+});
 
-export function witnessWithPkhSignature(
+export const witnessWithPkhSignature = (
   witness: Witness,
-  entry: [Digest, [string, Signature]]
-): Witness {
+  entry: [Digest, [string, Signature]],
+): Witness => {
   const pkh = entry[0];
   const sigs = [...witness.pkh_signature];
   const idx = sigs.findIndex(([h]) => h === pkh);
   if (idx >= 0) sigs[idx] = entry;
   else sigs.push(entry);
-  return { ...witness, pkh_signature: sigs };
-}
+  return {...witness, pkh_signature: sigs};
+};
 
-function haxPreimageToWire(noun: Noun): Noun {
-  if (typeof noun === "string" || Array.isArray(noun)) return noun;
-  if (noun && typeof noun === "object" && "tag" in noun) {
+const haxPreimageToWire = (noun: Noun): Noun => {
+  if (typeof noun === 'string' || Array.isArray(noun)) return noun;
+  if (noun && typeof noun === 'object' && 'tag' in noun) {
     return toWire(noun as NounTree);
   }
   return noun;
-}
+};
 
-export function witnessWithHaxPreimage(
+export const witnessWithHaxPreimage = (
   witness: Witness,
   digest: Digest,
-  preimageNoun: Noun
-): Witness {
+  preimageNoun: Noun,
+): Witness => {
   const wire = haxPreimageToWire(preimageNoun);
   const hax = [...witness.hax_map];
   const idx = hax.findIndex(([d]) => d === digest);
   if (idx >= 0) hax[idx] = [digest, wire];
   else hax.push([digest, wire]);
-  return { ...witness, hax_map: hax };
-}
+  return {...witness, hax_map: hax};
+};
 
 /** Assemble a witness spend from lock + optional unlock data. */
-export function spendV1FromLock(
+export const spendV1FromLock = (
   lock: Lock,
   lockSpIndex: number,
   seeds: SeedsV1,
@@ -114,8 +113,8 @@ export function spendV1FromLock(
   unlocks?: {
     pkhSignatures?: PkhSignature;
     haxMap?: [Digest, Noun][];
-  }
-): SpendV1 {
+  },
+): SpendV1 => {
   let witness = witnessNew(lock, lockSpIndex);
   if (unlocks?.pkhSignatures) {
     for (const entry of unlocks.pkhSignatures) {
@@ -128,8 +127,7 @@ export function spendV1FromLock(
     }
   }
   return spendV1NewWitness(witness, seeds, fee);
-}
+};
 
-export function spendConditionFromWitness(w: Witness): SpendCondition {
-  return w.lock_merkle_proof.spend_condition;
-}
+export const spendConditionFromWitness = (w: Witness): SpendCondition =>
+  w.lock_merkle_proof.spend_condition;

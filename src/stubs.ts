@@ -4,11 +4,11 @@ export class NotImplementedError extends Error {
 
   constructor(feature: string) {
     super(`@nockchain/rose-ts: not implemented — ${feature}`);
-    this.name = "NotImplementedError";
+    this.name = 'NotImplementedError';
     this.feature = feature;
   }
 }
 
-export function notImplemented(feature: string): never {
+export const notImplemented = (feature: string): never => {
   throw new NotImplementedError(feature);
-}
+};

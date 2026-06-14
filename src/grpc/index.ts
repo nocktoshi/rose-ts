@@ -1,6 +1,6 @@
-import type { NockchainTx } from "../types.js";
-import { RpcClient } from "../rpc/client.js";
-import type { Balance } from "../rpc/types.js";
+import type {NockchainTx} from '../types.js';
+import {RpcClient} from '../rpc/client.js';
+import type {Balance} from '../rpc/types.js';
 
 export type FetchFn = typeof fetch;
 
@@ -10,7 +10,9 @@ export class GrpcClient extends RpcClient {
     return super.sendTransaction(tx);
   }
 
-  async getBalanceByAddress(address: string): Promise<Balance & { notes: Balance["notes"] }> {
+  async getBalanceByAddress(
+    address: string,
+  ): Promise<Balance & {notes: Balance['notes']}> {
     return super.getBalance(address);
   }
 

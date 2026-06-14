@@ -1,24 +1,20 @@
-import { badd, bmul, bneg, bsub, binv, type Belt } from "../core/belt.js";
-import { mustAt } from "../core/must.js";
+import {badd, bmul, bneg, bsub, binv, type Belt} from '../core/belt.js';
+import {mustAt} from '../core/must.js';
 
 const MAX_POLY_SIZE = 7;
 
-function bdiv(a: Belt, b: Belt): Belt {
-  return bmul(a, binv(b));
-}
+const bdiv = (a: Belt, b: Belt): Belt => bmul(a, binv(b));
 
-function degree(data: Belt[]): number {
+const degree = (data: Belt[]): number => {
   for (let i = data.length - 1; i >= 0; i--) {
     if (data[i] !== 0n) return i;
   }
   return 0;
-}
+};
 
-function isZero(data: Belt[]): boolean {
-  return data.every((x) => x === 0n);
-}
+const isZero = (data: Belt[]): boolean => data.every(x => x === 0n);
 
-function bpsub(a: Belt[], b: Belt[], res: Belt[]): void {
+const bpsub = (a: Belt[], b: Belt[], res: Belt[]): void => {
   const resLen = Math.max(a.length, b.length);
   for (let i = 0; i < resLen; i++) {
     if (i < a.length && i < b.length) {
@@ -29,9 +25,9 @@ function bpsub(a: Belt[], b: Belt[], res: Belt[]): void {
       res[i] = bneg(mustAt(b, i));
     }
   }
-}
+};
 
-function bpmul(a: Belt[], b: Belt[], res: Belt[]): void {
+const bpmul = (a: Belt[], b: Belt[], res: Belt[]): void => {
   res.fill(0n);
   if (isZero(a) || isZero(b)) return;
   for (let i = 0; i < a.length; i++) {
@@ -40,15 +36,15 @@ function bpmul(a: Belt[], b: Belt[], res: Belt[]): void {
       res[i + j] = badd(res[i + j] ?? 0n, bmul(mustAt(a, i), mustAt(b, j)));
     }
   }
-}
+};
 
-function bpdvr(a: Belt[], b: Belt[], q: Belt[], res: Belt[]): void {
+const bpdvr = (a: Belt[], b: Belt[], q: Belt[], res: Belt[]): void => {
   if (isZero(a)) {
     q.fill(0n);
     res.fill(0n);
     return;
   }
-  if (isZero(b)) throw new Error("divide by zero");
+  if (isZero(b)) throw new Error('divide by zero');
 
   q.fill(0n);
   res.fill(0n);
@@ -67,7 +63,10 @@ function bpdvr(a: Belt[], b: Belt[], q: Belt[], res: Belt[]): void {
     for (let k = 0; k <= degB; k++) {
       const index = k;
       if (k <= aEnd && k < b.length && k <= i) {
-        r[i - index] = bsub(mustAt(r, i - index), bmul(coeff, mustAt(b, endB - index)));
+        r[i - index] = bsub(
+          mustAt(r, i - index),
+          bmul(coeff, mustAt(b, endB - index)),
+        );
       }
     }
     degR = Math.max(0, degR - 1);
@@ -78,15 +77,15 @@ function bpdvr(a: Belt[], b: Belt[], q: Belt[], res: Belt[]): void {
 
   const rLen = degR + 1;
   for (let j = 0; j < rLen; j++) res[j] = mustAt(r, j);
-}
+};
 
-export function bpegcd(
+export const bpegcd = (
   a: Belt[],
   b: Belt[],
   d: Belt[],
   u: Belt[],
-  v: Belt[]
-): void {
+  v: Belt[],
+): void => {
   let m1u: Belt[] = [0n];
   let m2u: Belt[] = [1n];
   let m1v: Belt[] = [1n];
@@ -135,4 +134,4 @@ export function bpegcd(
 
   for (let i = 0; i < m2u.length && i < u.length; i++) u[i] = mustAt(m2u, i);
   for (let i = 0; i < m2v.length && i < v.length; i++) v[i] = mustAt(m2v, i);
-}
+};

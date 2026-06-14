@@ -1,7 +1,7 @@
-import type { Digest, Signature } from "../types.js";
-import { digestFromBase58 } from "../core/digest.js";
-import { G_ORDER, truncGOrder, U256 } from "../core/u256.js";
-import { hashVarlen } from "../core/tip5/index.js";
+import type {Digest, Signature} from '../types.js';
+import {digestFromBase58} from '../core/digest.js';
+import {G_ORDER, truncGOrder, U256} from '../core/u256.js';
+import {hashVarlen} from '../core/tip5/index.js';
 import {
   A_GEN,
   chAdd,
@@ -12,13 +12,13 @@ import {
   publicKeyFromBeBytes as pointFromBeBytes,
   publicKeyToBeBytes,
   type CheetahPoint,
-} from "./cheetah.js";
+} from './cheetah.js';
 
 export class PublicKey {
   private constructor(readonly point: CheetahPoint) {}
 
   static fromBeBytes(bytes: Uint8Array): PublicKey {
-    if (bytes.length !== 97) throw new Error("Public key must be 97 bytes");
+    if (bytes.length !== 97) throw new Error('Public key must be 97 bytes');
     return new PublicKey(pointFromBeBytes(bytes));
   }
 
@@ -44,7 +44,9 @@ export class PublicKey {
   }
 
   toHex(): string {
-    return [...this.toBeBytes()].map((b) => b.toString(16).padStart(2, "0")).join("");
+    return [...this.toBeBytes()]
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
   }
 
   toBase58(): string {
@@ -54,7 +56,12 @@ export class PublicKey {
   verify(digest: Digest, signature: Signature): boolean {
     const c = U256.fromLeHex(signature.c);
     const s = U256.fromLeHex(signature.s);
-    if (c.eq(U256.ZERO) || !c.lt(G_ORDER) || s.eq(U256.ZERO) || !s.lt(G_ORDER)) {
+    if (
+      c.eq(U256.ZERO) ||
+      !c.lt(G_ORDER) ||
+      s.eq(U256.ZERO) ||
+      !s.lt(G_ORDER)
+    ) {
       return false;
     }
 
@@ -78,18 +85,16 @@ export class PublicKey {
   }
 }
 
-export function publicKeyFromHex(hex: string): PublicKey | undefined {
-  return PublicKey.fromHex(hex);
-}
+export const publicKeyFromHex = (hex: string): PublicKey | undefined =>
+  PublicKey.fromHex(hex);
 
-export function publicKeyToHex(pk: PublicKey): string {
-  return pk.toHex();
-}
+export const publicKeyToHex = (pk: PublicKey): string => pk.toHex();
 
-export function publicKeyFromBeBytes(bytes: Uint8Array): PublicKey {
-  return PublicKey.fromBeBytes(bytes);
-}
+export const publicKeyFromBeBytes = (bytes: Uint8Array): PublicKey =>
+  PublicKey.fromBeBytes(bytes);
 
-export function publicKeyVerify(pk: PublicKey, digest: Digest, signature: Signature): boolean {
-  return pk.verify(digest, signature);
-}
+export const publicKeyVerify = (
+  pk: PublicKey,
+  digest: Digest,
+  signature: Signature,
+): boolean => pk.verify(digest, signature);

@@ -1,6 +1,6 @@
 {
   "name": "@nockchain/rose-ts",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Pure TypeScript Wallet Primitives for Nockchain",
   "author": "Nocktoshi <nocktoshi@nockchain.net>",
   "license": "GPL-3.0",
@@ -19,6 +19,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./internal": {
+      "types": "./dist/internal.d.ts",
+      "import": "./dist/internal.js"
     }
   },
   "scripts": {
@@ -40,6 +44,8 @@
     "@nockchain/rose-wasm": "0.2.0-alpha.4",
     "@types/node": "25.9.3",
     "eslint": "^10.5.0",
+    "eslint-plugin-prefer-arrow-functions": "^3.9.1",
+    "gts": "^7.0.0",
     "ts-proto": "^2.11.8",
     "typescript": "6.0.3",
     "typescript-eslint": "8.61.0",

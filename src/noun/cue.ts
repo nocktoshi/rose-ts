@@ -1,6 +1,6 @@
-import { must, mustAt } from "../core/must.js";
-import { UBig } from "../core/ubig.js";
-import { atom, cons, type NounTree } from "./types.js";
+import {must, mustAt} from '../core/must.js';
+import {UBig} from '../core/ubig.js';
+import {atom, cons, type NounTree} from './types.js';
 
 class BitReader {
   constructor(private readonly bytes: Uint8Array) {}
@@ -92,38 +92,38 @@ class BitReader {
 }
 
 type MutableTree =
-  | { tag: "atom"; value: UBig }
-  | { tag: "cell"; head: Slot; tail: Slot };
+  | {tag: 'atom'; value: UBig}
+  | {tag: 'cell'; head: Slot; tail: Slot};
 
-interface Slot { tree: MutableTree }
+interface Slot {
+  tree: MutableTree;
+}
 
 type CueStackEntry =
-  | { kind: "dest"; slot: Slot }
-  | { kind: "backref"; backref: bigint; slot: Slot };
+  | {kind: 'dest'; slot: Slot}
+  | {kind: 'backref'; backref: bigint; slot: Slot};
 
-function makeAtomSlot(): Slot {
-  return { tree: { tag: "atom", value: UBig.zero() } };
-}
+const makeAtomSlot = (): Slot => ({tree: {tag: 'atom', value: UBig.zero()}});
 
-function setAtom(slot: Slot, value: UBig): void {
-  slot.tree = { tag: "atom", value };
-}
+const setAtom = (slot: Slot, value: UBig): void => {
+  slot.tree = {tag: 'atom', value};
+};
 
-function freeze(m: MutableTree): NounTree {
-  if (m.tag === "atom") return atom(m.value);
+const freeze = (m: MutableTree): NounTree => {
+  if (m.tag === 'atom') return atom(m.value);
   return cons(freeze(m.head.tree), freeze(m.tail.tree));
-}
+};
 
-export function cue(bytes: Uint8Array): NounTree | null {
+export const cue = (bytes: Uint8Array): NounTree | null => {
   const reader = new BitReader(bytes);
   const backrefMap = new Map<bigint, MutableTree>();
   const rootSlot = makeAtomSlot();
-  const stack: CueStackEntry[] = [{ kind: "dest", slot: rootSlot }];
+  const stack: CueStackEntry[] = [{kind: 'dest', slot: rootSlot}];
 
   while (stack.length > 0) {
-    const entry = must(stack.pop(), "cue stack empty");
+    const entry = must(stack.pop(), 'cue stack empty');
 
-    if (entry.kind === "backref") {
+    if (entry.kind === 'backref') {
       backrefMap.set(entry.backref, entry.slot.tree);
       continue;
     }
@@ -141,13 +141,13 @@ export function cue(bytes: Uint8Array): NounTree | null {
       } else {
         const headSlot = makeAtomSlot();
         const tailSlot = makeAtomSlot();
-        const cell: MutableTree = { tag: "cell", head: headSlot, tail: tailSlot };
+        const cell: MutableTree = {tag: 'cell', head: headSlot, tail: tailSlot};
         slot.tree = cell;
         const backref = BigInt(startCursor);
         backrefMap.set(backref, cell);
-        stack.push({ kind: "backref", backref, slot });
-        stack.push({ kind: "dest", slot: tailSlot });
-        stack.push({ kind: "dest", slot: headSlot });
+        stack.push({kind: 'backref', backref, slot});
+        stack.push({kind: 'dest', slot: tailSlot});
+        stack.push({kind: 'dest', slot: headSlot});
       }
     } else {
       const a = reader.rubAtom();
@@ -158,4 +158,4 @@ export function cue(bytes: Uint8Array): NounTree | null {
   }
 
   return freeze(rootSlot.tree);
-}
+};

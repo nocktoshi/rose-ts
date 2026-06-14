@@ -2,8 +2,8 @@
  * @nockchain/rose-ts — pure TypeScript drop-in for protocol-facing rose-wasm APIs.
  */
 
-export { DEFAULT_FEE_PER_WORD } from "./constants.js";
-export { NotImplementedError } from "./stubs.js";
+export {DEFAULT_FEE_PER_WORD} from './constants.js';
+export {NotImplementedError} from './stubs.js';
 
 export type {
   Digest,
@@ -29,13 +29,22 @@ export type {
   TxEngineSettings,
   TxLock,
   Witness,
-} from "./types.js";
+} from './types.js';
 
-export type { Balance, BalanceEntry } from "./rpc/types.js";
-export type { OutputNoteData } from "./tx/types.js";
-export type { SimpleSpendLockOptions } from "./tx/builder.js";
+export type {Balance, BalanceEntry} from './rpc/types.js';
+export type {GrpcBlocks, GrpcBlockEntry} from './rpc/client.js';
+export type {OutputNoteData} from './tx/types.js';
+export type {SimpleSpendLockOptions} from './tx/builder.js';
 
-export { jam, cue, tas, untas, tasBelts, atomToBelts, beltsToAtom } from "./noun/index.js";
+export {
+  jam,
+  cue,
+  tas,
+  untas,
+  tasBelts,
+  atomToBelts,
+  beltsToAtom,
+} from './noun/index.js';
 export {
   deriveMasterKey,
   deriveMasterKeyFromMnemonic,
@@ -49,7 +58,7 @@ export {
   publicKeyVerify,
   signMessage,
   verifySignature,
-} from "./crypto/index.js";
+} from './crypto/index.js';
 export {
   hashPreimage,
   hashNoun,
@@ -92,7 +101,7 @@ export {
   hashSpendsV1,
   hashLockMerkleProofDigest,
   seedV1NewSinglePkh,
-} from "./hash/index.js";
+} from './hash/index.js';
 export {
   TxBuilder,
   SpendBuilder,
@@ -132,11 +141,11 @@ export {
   htlcGiftOutputFirstName,
   htlcOrLock,
   htlcLockRootDigest,
-} from "./tx/index.js";
-export { RpcClient } from "./rpc/client.js";
+} from './tx/index.js';
+export {RpcClient} from './rpc/client.js';
 
 /** @deprecated Use RpcClient — protobuf naming is wire-internal. */
-export { GrpcClient } from "./grpc/index.js";
+export {GrpcClient} from './grpc/index.js';
 /** @deprecated Wire-internal; use domain types + RpcClient.sendTransaction. */
 export {
   noteFromProtobuf,
@@ -147,4 +156,4 @@ export {
   digestToProtobuf,
   rawTxFromProtobuf,
   rawTxToProtobuf,
-} from "./proto/index.js";
+} from './proto/index.js';

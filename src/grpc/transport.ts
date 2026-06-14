@@ -1,10 +1,10 @@
 /** gRPC-web transport (5-byte frame + fetch). */
 
-import { mustAt } from "../core/must.js";
+import {mustAt} from '../core/must.js';
 
 export type FetchFn = typeof fetch;
 
-export function grpcWebFrame(message: Uint8Array): Uint8Array {
+export const grpcWebFrame = (message: Uint8Array): Uint8Array => {
   const out = new Uint8Array(5 + message.length);
   out[0] = 0;
   out[1] = (message.length >>> 24) & 0xff;
@@ -13,9 +13,9 @@ export function grpcWebFrame(message: Uint8Array): Uint8Array {
   out[4] = message.length & 0xff;
   out.set(message, 5);
   return out;
-}
+};
 
-export function unwrapGrpcWebFrames(body: Uint8Array): Uint8Array[] {
+export const unwrapGrpcWebFrames = (body: Uint8Array): Uint8Array[] => {
   const messages: Uint8Array[] = [];
   let off = 0;
   while (off + 5 <= body.length) {
@@ -29,30 +29,35 @@ export function unwrapGrpcWebFrames(body: Uint8Array): Uint8Array[] {
     off += len;
   }
   return messages;
-}
+};
 
-function grpcStatusError(response: Response): Error | null {
-  const status = response.headers.get("grpc-status");
-  if (status == null || status === "0") return null;
-  const message = response.headers.get("grpc-message");
-  const detail = message ? decodeURIComponent(message) : `grpc-status ${status}`;
+const grpcStatusError = (response: Response): Error | null => {
+  const status = response.headers.get('grpc-status');
+  if (status == null || status === '0') return null;
+  const message = response.headers.get('grpc-message');
+  const detail = message
+    ? decodeURIComponent(message)
+    : `grpc-status ${status}`;
   return new Error(`gRPC error: ${detail}`);
-}
+};
 
-const SERVICE = "nockchain.public.v2.NockchainService";
+export const NOCKCHAIN_SERVICE = 'nockchain.public.v2.NockchainService';
+export const NOCKCHAIN_BLOCK_SERVICE =
+  'nockchain.public.v2.NockchainBlockService';
 
-export async function grpcWebCall(
+export const grpcWebCall = async (
   endpoint: string,
   method: string,
   body: Uint8Array,
-  fetchFn: FetchFn
-): Promise<Uint8Array> {
-  const url = `${endpoint.replace(/\/$/, "")}/${SERVICE}/${method}`;
+  fetchFn: FetchFn,
+  service: string = NOCKCHAIN_SERVICE,
+): Promise<Uint8Array> => {
+  const url = `${endpoint.replace(/\/$/, '')}/${service}/${method}`;
   const response = await fetchFn(url, {
-    method: "POST",
+    method: 'POST',
     headers: {
-      "content-type": "application/grpc-web+proto",
-      "x-grpc-web": "1",
+      'content-type': 'application/grpc-web+proto',
+      'x-grpc-web': '1',
     },
     body: new Uint8Array(body),
   });
@@ -63,4 +68,4 @@ export async function grpcWebCall(
   const grpcErr = grpcStatusError(response);
   if (grpcErr && bytes.length === 0) throw grpcErr;
   return bytes;
-}
+};

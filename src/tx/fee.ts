@@ -1,6 +1,6 @@
-import { encodeWitness } from "../noun/codec.js";
-import { nounWords } from "../noun/words.js";
-import { noteDataFeeWords } from "../hash/note.js";
+import {encodeWitness} from '../noun/codec.js';
+import {nounWords} from '../noun/words.js';
+import {noteDataFeeWords} from '../hash/note.js';
 import type {
   LockRoot,
   Name,
@@ -9,15 +9,14 @@ import type {
   Spend1V1,
   SpendV1,
   TxEngineSettings,
-} from "../types.js";
-import { lockRootHash } from "../hash/index.js";
-import { missingUnlocksFee as missingUnlocksFeeImpl } from "./unlocks.js";
+} from '../types.js';
+import {lockRootHash} from '../hash/index.js';
+import {missingUnlocksFee as missingUnlocksFeeImpl} from './unlocks.js';
 
-function seedNoteDataWords(seed: SeedV1): bigint {
-  return noteDataFeeWords(seed.note_data);
-}
+const seedNoteDataWords = (seed: SeedV1): bigint =>
+  noteDataFeeWords(seed.note_data);
 
-export function spendCalcWords(spend: SpendV1): [bigint, bigint] {
+export const spendCalcWords = (spend: SpendV1): [bigint, bigint] => {
   if (spend.tag !== 1) {
     const seeds = Array.isArray(spend.seeds) ? spend.seeds : [];
     const seedWords = seeds.reduce((acc, s) => acc + seedNoteDataWords(s), 0n);
@@ -28,9 +27,9 @@ export function spendCalcWords(spend: SpendV1): [bigint, bigint] {
   const seedWords = seeds.reduce((acc, sd) => acc + seedNoteDataWords(sd), 0n);
   const witnessWords = nounWords(encodeWitness(s.witness));
   return [seedWords, witnessWords];
-}
+};
 
-function mergeNoteDataByLockRoot(spends: SpendV1[]): Map<string, NoteData> {
+const mergeNoteDataByLockRoot = (spends: SpendV1[]): Map<string, NoteData> => {
   const merged = new Map<string, NoteData>();
   for (const spend of spends) {
     const seeds = spend.tag === 1 ? spend.seeds : spend.seeds;
@@ -47,14 +46,14 @@ function mergeNoteDataByLockRoot(spends: SpendV1[]): Map<string, NoteData> {
     }
   }
   return merged;
-}
+};
 
-export function wordsForOrderedSpends(
+export const wordsForOrderedSpends = (
   spends: Iterable<SpendV1>,
-  settings: TxEngineSettings
-): [bigint, bigint] {
+  settings: TxEngineSettings,
+): [bigint, bigint] => {
   if (settings.tx_engine_version === 0) {
-    throw new Error("fee() called on v0 settings");
+    throw new Error('fee() called on v0 settings');
   }
   const list = [...spends];
   let sw = 0n;
@@ -75,34 +74,32 @@ export function wordsForOrderedSpends(
     }
   }
   return [sw, ww];
-}
+};
 
-export function wordsForUnorderedSpends(
+export const wordsForUnorderedSpends = (
   spends: Iterable<[Name, SpendV1]>,
-  settings: TxEngineSettings
-): [bigint, bigint] {
-  return wordsForOrderedSpends(
+  settings: TxEngineSettings,
+): [bigint, bigint] =>
+  wordsForOrderedSpends(
     [...spends].map(([, s]) => s),
-    settings
+    settings,
   );
-}
 
-export function calcFeeFromSpends(
+export const calcFeeFromSpends = (
   spends: Iterable<SpendV1>,
-  settings: TxEngineSettings
-): bigint {
+  settings: TxEngineSettings,
+): bigint => {
   const [sw, ww] = wordsForOrderedSpends(spends, settings);
   const fee =
     BigInt(settings.cost_per_word) * sw +
     (BigInt(settings.cost_per_word) * ww) / BigInt(settings.witness_word_div);
   const minFee = BigInt(settings.min_fee);
   return fee > minFee ? fee : minFee;
-}
+};
 
-export function missingUnlocksFee(spend: SpendV1, settings: TxEngineSettings): bigint {
-  return missingUnlocksFeeImpl(spend, settings);
-}
+export const missingUnlocksFee = (
+  spend: SpendV1,
+  settings: TxEngineSettings,
+): bigint => missingUnlocksFeeImpl(spend, settings);
 
-export function lockRootKey(root: LockRoot): string {
-  return lockRootHash(root);
-}
+export const lockRootKey = (root: LockRoot): string => lockRootHash(root);

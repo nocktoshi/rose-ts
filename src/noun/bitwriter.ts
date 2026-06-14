@@ -1,6 +1,6 @@
 /** LSB-first bit writer for jam encoding. */
 
-import { mustAt } from "../core/must.js";
+import {mustAt} from '../core/must.js';
 
 export class BitWriter {
   private buf: number[] = [];

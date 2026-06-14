@@ -1,4 +1,4 @@
-import { mustAt } from "../must.js";
+import {mustAt} from '../must.js';
 import {
   badd,
   bmul,
@@ -7,7 +7,7 @@ import {
   montify,
   type Belt,
   PRIME_128,
-} from "../belt.js";
+} from '../belt.js';
 import {
   LOOKUP_TABLE,
   MDS_MATRIX,
@@ -17,9 +17,9 @@ import {
   RATE,
   ROUND_CONSTANTS,
   STATE_SIZE,
-} from "./constants.js";
+} from './constants.js';
 
-function sboxLayer(state: Belt[]): Belt[] {
+const sboxLayer = (state: Belt[]): Belt[] => {
   const res: Belt[] = new Array(STATE_SIZE).fill(0n);
 
   for (let i = 0; i < NUM_SPLIT_AND_LOOKUP; i++) {
@@ -43,9 +43,9 @@ function sboxLayer(state: Belt[]): Belt[] {
     res[j] = bpow(mustAt(state, j), 7n);
   }
   return res;
-}
+};
 
-function linearLayer(state: Belt[]): Belt[] {
+const linearLayer = (state: Belt[]): Belt[] => {
   const result: Belt[] = new Array(STATE_SIZE).fill(0n);
   for (let i = 0; i < STATE_SIZE; i++) {
     for (let j = 0; j < STATE_SIZE; j++) {
@@ -54,45 +54,47 @@ function linearLayer(state: Belt[]): Belt[] {
     }
   }
   return result;
-}
+};
 
-export function permute(sponge: Belt[]): void {
+export const permute = (sponge: Belt[]): void => {
   for (let i = 0; i < NUM_ROUNDS; i++) {
     const a = sboxLayer(sponge);
     const b = linearLayer(a);
     for (let j = 0; j < STATE_SIZE; j++) {
-      const rCons = ((mustAt(ROUND_CONSTANTS, i * STATE_SIZE + j) * R) % PRIME_128) as Belt;
+      const rCons = ((mustAt(ROUND_CONSTANTS, i * STATE_SIZE + j) * R) %
+        PRIME_128) as Belt;
       sponge[j] = badd(rCons, mustAt(b, j));
     }
   }
-}
+};
 
-function tip5MontifyVec(input: Belt[]): Belt[] {
-  return input.map((b) => montify(b));
-}
+const tip5MontifyVec = (input: Belt[]): Belt[] => input.map(b => montify(b));
 
-function tip5CalcDigest(sponge: Belt[]): Belt[] {
-  return sponge.slice(0, 5).map((v) => montReduction(v));
-}
+const tip5CalcDigest = (sponge: Belt[]): Belt[] =>
+  sponge.slice(0, 5).map(v => montReduction(v));
 
-function createInitSpongeVariable(): Belt[] {
-  return new Array(STATE_SIZE).fill(0n);
-}
+const createInitSpongeVariable = (): Belt[] => new Array(STATE_SIZE).fill(0n);
 
-function createInitSpongeFixed(): Belt[] {
+const createInitSpongeFixed = (): Belt[] => {
   const sponge = new Array(STATE_SIZE).fill(0n);
   for (let i = 10; i < STATE_SIZE; i++) {
     sponge[i] = 4294967295n;
   }
   return sponge;
-}
+};
 
-function tip5AbsorbSponge(sponge: Belt[], input: Belt[], pad: boolean): void {
+const tip5AbsorbSponge = (
+  sponge: Belt[],
+  input: Belt[],
+  pad: boolean,
+): void => {
   const r = input.length % RATE;
   const fullChunks = Math.floor(input.length / RATE);
 
   for (let chunkIdx = 0; chunkIdx < fullChunks; chunkIdx++) {
-    const chunk = tip5MontifyVec(input.slice(chunkIdx * RATE, (chunkIdx + 1) * RATE));
+    const chunk = tip5MontifyVec(
+      input.slice(chunkIdx * RATE, (chunkIdx + 1) * RATE),
+    );
     for (let i = 0; i < RATE; i++) {
       sponge[i] = mustAt(chunk, i);
     }
@@ -112,18 +114,18 @@ function tip5AbsorbSponge(sponge: Belt[], input: Belt[], pad: boolean): void {
     }
     permute(sponge);
   } else if (r !== 0) {
-    throw new Error("unpadded input must be multiple of RATE");
+    throw new Error('unpadded input must be multiple of RATE');
   }
-}
+};
 
-export function hashVarlen(input: Belt[]): Belt[] {
+export const hashVarlen = (input: Belt[]): Belt[] => {
   const sponge = createInitSpongeVariable();
   tip5AbsorbSponge(sponge, input, true);
   return tip5CalcDigest(sponge);
-}
+};
 
-export function hashFixed(input: Belt[]): Belt[] {
+export const hashFixed = (input: Belt[]): Belt[] => {
   const sponge = createInitSpongeFixed();
   tip5AbsorbSponge(sponge, input, false);
   return tip5CalcDigest(sponge);
-}
+};

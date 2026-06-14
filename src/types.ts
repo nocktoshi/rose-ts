@@ -1,10 +1,10 @@
 /** Base58 Tip5 digest (branded string). */
-export type Digest = string & { readonly __tag_digest?: undefined };
+export type Digest = string & {readonly __tag_digest?: undefined};
 
 /** Nicks amount as decimal string (branded). */
-export type Nicks = string & { readonly __tag_nicks?: undefined };
+export type Nicks = string & {readonly __tag_nicks?: undefined};
 
-import type { NounWire } from "./noun/types.js";
+import type {NounWire} from './noun/types.js';
 
 /** Jam/cue wire noun (`hex-atom` or right-nested cell array). */
 export type Noun = NounWire;
@@ -20,12 +20,12 @@ export interface Name {
   source?: Source;
   parent?: Digest;
   parent_hash?: Digest;
-  Parent?: { parent: Digest; index: number };
+  Parent?: {parent: Digest; index: number};
 }
 
 export type Source =
-  | { hash: Digest; is_coinbase: boolean }
-  | { Parent: { parent: Digest; index: number } };
+  | {hash: Digest; is_coinbase: boolean}
+  | {Parent: {parent: Digest; index: number}};
 
 export type Version = 0 | 1;
 export type TxId = Digest;
@@ -51,10 +51,10 @@ export interface Hax {
 }
 
 export type LockPrimitive =
-  | ({ tag: "pkh" } & Pkh)
-  | ({ tag: "tim" } & LockTim)
-  | ({ tag: "hax" } & Hax)
-  | { tag: "brn" };
+  | ({tag: 'pkh'} & Pkh)
+  | ({tag: 'tim'} & LockTim)
+  | ({tag: 'hax'} & Hax)
+  | {tag: 'brn'};
 
 export type SpendCondition = LockPrimitive[];
 
@@ -80,10 +80,10 @@ export interface LockV16 {
 
 export type Lock =
   | SpendCondition
-  | ({ tag: 2 } & LockV2)
-  | ({ tag: 4 } & LockV4)
-  | ({ tag: 8 } & LockV8)
-  | ({ tag: 16 } & LockV16);
+  | ({tag: 2} & LockV2)
+  | ({tag: 4} & LockV4)
+  | ({tag: 8} & LockV8)
+  | ({tag: 16} & LockV16);
 
 export type LockRoot = Digest | Lock;
 
@@ -105,11 +105,11 @@ export interface NoteV0 {
   inner: {
     version: Version;
     origin_page: BlockHeight;
-    timelock?: { tim: unknown };
+    timelock?: {tim: unknown};
   };
   name: Name;
   sig: unknown;
-  source: { hash: Digest; is_coinbase: boolean };
+  source: {hash: Digest; is_coinbase: boolean};
   assets: Nicks;
 }
 
@@ -142,7 +142,7 @@ export interface LockMerkleProofFull {
 
 export type LockMerkleProof =
   | LockMerkleProofStub
-  | ({ version: "full" } & LockMerkleProofFull);
+  | ({version: 'full'} & LockMerkleProofFull);
 
 export interface Signature {
   c: string;
@@ -168,8 +168,8 @@ export interface Spend1V1 {
 }
 
 export type SpendV1 =
-  | { tag: 0; signature: unknown; seeds: SeedsV1; fee: Nicks }
-  | ({ tag: 1 } & Spend1V1);
+  | {tag: 0; signature: unknown; seeds: SeedsV1; fee: Nicks}
+  | ({tag: 1} & Spend1V1);
 
 /** Wire: `[name, spend][]` */
 export type SpendsV1 = [Name, SpendV1][];
@@ -184,9 +184,9 @@ export interface LockMetadata {
 }
 
 export type InputDisplay =
-  | { inputs: ZMap<Name, unknown> }
-  | { tag: 0; inputs: ZMap<Name, unknown> }
-  | { tag: 1; inputs: ZMap<Name, SpendCondition> };
+  | {inputs: ZMap<Name, unknown>}
+  | {tag: 0; inputs: ZMap<Name, unknown>}
+  | {tag: 1; inputs: ZMap<Name, SpendCondition>};
 
 export interface TransactionDisplay {
   inputs: InputDisplay;
@@ -217,13 +217,13 @@ export interface TxEngineSettings {
 
 /** gRPC v2 raw transaction (wire format). */
 export interface PbCom2RawTransaction {
-  version?: { value: string };
+  version?: {value: string};
   id: string;
   spends: PbCom2SpendEntry[];
 }
 
 export interface PbCom2SpendEntry {
-  name?: { first: string; last: string; source?: unknown };
+  name?: {first: string; last: string; source?: unknown};
   spend?: PbCom2Spend | null;
 }
 
@@ -232,13 +232,13 @@ export interface PbCom2Spend {
 }
 
 export type PbCom2SpendSpendKind =
-  | { Legacy: unknown }
-  | { Witness: PbCom2WitnessSpend };
+  | {Legacy: unknown}
+  | {Witness: PbCom2WitnessSpend};
 
 export interface PbCom2WitnessSpend {
   witness?: PbCom2Witness | null;
   seeds: PbCom2Seed[];
-  fee?: { value: string };
+  fee?: {value: string};
 }
 
 export interface PbCom2Witness {
@@ -256,40 +256,43 @@ export interface PbCom2Seed {
   output_source?: unknown;
   lock_root: string;
   note_data?: unknown;
-  gift?: { value: string };
+  gift?: {value: string};
   parent_hash: string;
 }
 
 export interface PbCom2Note {
-  note_version?: { V1: PbCom2NoteV1 } | { Legacy: unknown };
+  note_version?: {V1: PbCom2NoteV1} | {Legacy: unknown};
 }
 
 export interface PbCom2NoteV1 {
-  version?: { value: string };
-  origin_page?: { value: string };
-  name?: { first: string; last: string; source?: unknown };
+  version?: {value: string};
+  origin_page?: {value: string};
+  name?: {first: string; last: string; source?: unknown};
   note_data?: unknown;
-  assets?: { value: string };
+  assets?: {value: string};
 }
 
 export interface PbCom2Balance {
   notes: PbCom2BalanceEntry[];
-  height?: { value: string };
+  height?: {value: string};
   block_id: string;
-  page?: { next_page_token: string };
+  page?: {next_page_token: string};
 }
 
 export interface PbCom2BalanceEntry {
-  name?: { first: string; last: string };
+  name?: {first: string; last: string};
   note?: PbCom2Note | null;
 }
 
 /** LockInput tuple for simpleSpend: [lock, lock_sp_index]. */
-export interface TxLock { lock: Lock; lock_sp_index: number }
+export interface TxLock {
+  lock: Lock;
+  lock_sp_index: number;
+}
 
 /** Missing unlock primitives on a spend (wasm `MissingUnlocks`). */
 export type MissingUnlocks =
-  | { Pkh: { num_sigs: number; sig_of: Digest[] } }
-  | { Hax: { preimages_for: Digest[] } }
-  | "Brn"
-  | { Sig: { num_sigs: number; sig_of: Uint8Array[] } };
+  | {Pkh: {num_sigs: number; sig_of: Digest[]}}
+  | {Hax: {preimages_for: Digest[]}}
+  | 'Brn'
+  | {Sig: {num_sigs: number; sig_of: Uint8Array[]}};
