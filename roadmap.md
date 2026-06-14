@@ -1,4 +1,4 @@
-Wasm exposes **~280 functions + 4 classes**; rose-ts exports a curated subset with vitest parity against `@nockchain/rose-wasm`. v0 protocol is **out of scope**.
+Wasm exposes **~280 functions + 4 classes**; rose-ts exports a curated subset with vitest parity against `@nockbox/iris-wasm`. v0 protocol is **out of scope**.
 
 **API reference & wasm differences:** see [README.md](./README.md) (rose-ts-only APIs, extensions, behavioral diffs).
 

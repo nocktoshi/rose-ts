@@ -1,10 +1,10 @@
 # rose-ts
 
-Pure TypeScript Nockchain wallet primitives — a curated drop-in for protocol-facing APIs in `@nockchain/rose-wasm`, without a WebAssembly runtime.
+Pure TypeScript Nockchain wallet primitives — a curated drop-in for protocol-facing APIs in `@nockbox/iris-wasm`, without a WebAssembly runtime.
 
 Use it in Node.js, browsers, React Native, Cloudflare Workers, or anywhere you want Nockchain cryptography and transaction semantics in plain TS.
 
-**Parity bar:** 78 vitest tests compare implemented exports against `@nockchain/rose-wasm` as the oracle. See [roadmap.md](./roadmap.md) for coverage detail.
+**Parity bar:** 78 vitest tests compare implemented exports against `@nockbox/iris-wasm` as the oracle. See [roadmap.md](./roadmap.md) for coverage detail.
 
 ## Install
 
@@ -317,7 +317,7 @@ Types: `OutputNoteData`, `SimpleSpendLockOptions`
 Use wasm when you need an oracle or APIs not yet ported. Rose-ts can verify txs wasm builds:
 
 ```typescript
-import init, { TxBuilder as WasmTxBuilder, rawTxFromProtobuf } from "@nockchain/rose-wasm";
+import init, { TxBuilder as WasmTxBuilder, rawTxFromProtobuf } from "@nockbox/iris-wasm";
 import { TxBuilder, nockchainTxToRawTx, rawTxV1CalcId } from "@nockchain/rose-ts";
 
 await init();
@@ -336,7 +336,7 @@ Migrate incrementally: keep wasm for exotic noun codecs; use rose-ts for bundler
 ```bash
 npm install
 npm run build
-npm test          # 78 parity tests (requires @nockchain/rose-wasm devDep)
+npm test          # 78 parity tests (requires @nockbox/iris-wasm devDep)
 npm run test:watch
 ```
 
@@ -351,7 +351,8 @@ npm run test:watch
 
 MIT License
 
-Copyright (c) 2026 nockchain.net <oss@nockchain.net>
+Copyright (c) 2026 nocktoshi <nocktoshi@nockchain.net>
+
 Copyright (c) 2025 NockBox inc. <tech@nockbox.org>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
