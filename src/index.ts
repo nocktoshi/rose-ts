@@ -157,3 +157,13 @@ export {
   rawTxFromProtobuf,
   rawTxToProtobuf,
 } from './proto/index.js';
+
+export {
+  deriveTweak,
+  deriveMpcAddress,
+  LocalMpcSigner,
+  ContractMpcSigner,
+  signTxWithMpc,
+  signNockchainTxWithMpc,
+} from './mpc.js';
+export type {MpcAddress, MpcSigner} from './mpc.js';

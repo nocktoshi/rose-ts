@@ -95,6 +95,18 @@ export class PrivateKey {
     return signMulti(this.scalar, mBelts, nonce, pubkey);
   }
 
+  /**
+   * Derive the chainsig child private key `x + tweak (mod n)`, where
+   * `tweakLeBytes` (32 bytes) is interpreted little-endian mod the group order —
+   * the exact mapping the NEAR-MPC contract's `derive_tweak`/`tweak_scalar` use.
+   * Its public key equals `PublicKey.deriveChild(tweakLeBytes)`.
+   */
+  deriveChild(tweakLeBytes: Uint8Array): PrivateKey {
+    const tweak = U256.fromLeBytes(tweakLeBytes).addMod(U256.ZERO, G_ORDER);
+    const childScalar = this.scalar.addMod(tweak, G_ORDER);
+    return new PrivateKey(childScalar.toBeBytes());
+  }
+
   private publicKeyPoint(): CheetahPoint {
     const pt = chScalBig(this.scalar, A_GEN);
     if (!pt) throw new Error('invalid private key');

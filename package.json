@@ -1,6 +1,6 @@
 {
   "name": "@nockchain/rose-ts",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Pure TypeScript Wallet Primitives for Nockchain",
   "author": "Nocktoshi <nocktoshi@nockchain.net>",
   "license": "GPL-3.0",
