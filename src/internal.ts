@@ -39,6 +39,8 @@ export {
   bmul,
   binv,
   bpow,
+  montify,
+  montReduction,
   beltsFromBytes,
 } from './core/belt.js';
 

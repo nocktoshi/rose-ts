@@ -53,6 +53,22 @@ export class PublicKey {
     return cheetahPointToBase58(this.point);
   }
 
+  /**
+   * Derive a chainsig-style child public key: `childP = rootP + tweak·G`, where
+   * `tweakLeBytes` (32 bytes) is interpreted little-endian and reduced mod the
+   * group order — the exact mapping the NEAR-MPC contract's `derive_tweak` and
+   * the Rust `tweak_scalar` use. This is the per-(predecessor, path) Nockchain
+   * key an MPC root key controls; `hashPublicKey(childP.toBeBytes())` is its PKH.
+   */
+  deriveChild(tweakLeBytes: Uint8Array): PublicKey {
+    const tweak = U256.fromLeBytes(tweakLeBytes).addMod(U256.ZERO, G_ORDER);
+    const tweakG = chScalBig(tweak, A_GEN);
+    if (!tweakG) throw new Error('deriveChild: scalar multiplication failed');
+    const childPoint = chAdd(this.point, tweakG);
+    if (!childPoint) throw new Error('deriveChild: point addition failed');
+    return new PublicKey(childPoint);
+  }
+
   verify(digest: Digest, signature: Signature): boolean {
     const c = U256.fromLeHex(signature.c);
     const s = U256.fromLeHex(signature.s);

@@ -330,9 +330,19 @@ export class SpendBuilder {
     this.spend.witness.pkh_signature = [];
   }
 
-  async sign(signingKey: PrivateKey): Promise<boolean> {
+  /**
+   * Sign this spend with an external/remote signer (MPC, HSM, hardware wallet):
+   * given the signer's 97-byte BE public key and an (optionally async) callback
+   * that maps a sig-hash digest to a `{c, s}` signature. `sign(key)` is just the
+   * local-key case of this, so both share one code path and a remote signer can
+   * never drift from the canonical local one.
+   */
+  async signWith(
+    publicKeyBeBytes: Uint8Array,
+    signDigest: (digest: Digest) => Promise<Signature> | Signature,
+  ): Promise<boolean> {
     if (this.spend.tag !== 1) return false;
-    const pkh = hashPublicKey(signingKey.publicKey) as Digest;
+    const pkh = hashPublicKey(publicKeyBeBytes) as Digest;
     const sc = spendConditionFromLmp(this.spend.witness.lock_merkle_proof);
     for (const prim of sc) {
       if (prim.tag !== 'pkh') continue;
@@ -340,11 +350,9 @@ export class SpendBuilder {
         ? (prim.hashes as Digest[])
         : [];
       if (!hashes.includes(pkh)) continue;
-      const sig = signingKey.signDigest(
-        hashSpendV1SigHash(this.spend as Spend1V1),
-      );
+      const sig = await signDigest(hashSpendV1SigHash(this.spend as Spend1V1));
       const pubB58 = cheetahPointToBase58(
-        publicKeyFromBeBytes(signingKey.publicKey),
+        publicKeyFromBeBytes(publicKeyBeBytes),
       );
       const entry: [Digest, [string, {c: string; s: string}]] = [
         pkh,
@@ -359,6 +367,12 @@ export class SpendBuilder {
       return true;
     }
     return false;
+  }
+
+  async sign(signingKey: PrivateKey): Promise<boolean> {
+    return this.signWith(signingKey.publicKey, digest =>
+      signingKey.signDigest(digest),
+    );
   }
 }
 
@@ -803,10 +817,20 @@ export class TxBuilder {
     return ret;
   }
 
-  async sign(signingKey: PrivateKey): Promise<void> {
+  /** Sign all spends with an external/remote signer (see {@link SpendBuilder.signWith}). */
+  async signWith(
+    publicKeyBeBytes: Uint8Array,
+    signDigest: (digest: Digest) => Promise<Signature> | Signature,
+  ): Promise<void> {
     for (const sb of this.spends.values()) {
-      await sb.sign(signingKey);
+      await sb.signWith(publicKeyBeBytes, signDigest);
     }
+  }
+
+  async sign(signingKey: PrivateKey): Promise<void> {
+    return this.signWith(signingKey.publicKey, digest =>
+      signingKey.signDigest(digest),
+    );
   }
 
   validate(): void {
