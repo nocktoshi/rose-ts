@@ -79,3 +79,41 @@ export const digestBeltsToBytes = (belts: DigestBelts): Uint8Array => {
 
 export const digestBytesFromBase58 = (s: string): Uint8Array =>
   digestBeltsToBytes(digestFromBase58(s));
+
+/**
+ * 40-byte FROST/MPC signing message: each of the five belts as eight
+ * little-endian bytes. This is the payload an external Cheetah signer (the NEAR
+ * MPC `sign` call) consumes — it matches the Rust `message_from_digest` /
+ * `digest_from_message` round-trip, so a signature produced over these bytes
+ * verifies against the same digest `PrivateKey.signDigest` would sign.
+ *
+ * Note this differs from {@link digestBeltsToBytes} (a big-endian encoding of the
+ * combined integer); the MPC message is per-belt little-endian.
+ */
+export const digestToMessageBytes = (
+  digest: DigestBelts | string,
+): Uint8Array => {
+  const belts = typeof digest === 'string' ? digestFromBase58(digest) : digest;
+  const out = new Uint8Array(DIGEST_BYTE_LEN);
+  for (let i = 0; i < 5; i++) {
+    let v = mustAt(belts, i);
+    for (let j = 0; j < 8; j++) {
+      out[i * 8 + j] = Number(v & 0xffn);
+      v >>= 8n;
+    }
+  }
+  return out;
+};
+
+/** Inverse of {@link digestToMessageBytes}: five little-endian u64 belts → digest. */
+export const digestFromMessageBytes = (message: Uint8Array): DigestBelts => {
+  const belts: bigint[] = new Array(5).fill(0n);
+  for (let i = 0; i < 5; i++) {
+    let v = 0n;
+    for (let j = 7; j >= 0; j--) {
+      v = (v << 8n) | BigInt(mustAt(message, i * 8 + j));
+    }
+    belts[i] = v;
+  }
+  return digestFromBelts(belts);
+};

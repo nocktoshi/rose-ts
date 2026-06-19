@@ -167,3 +167,11 @@ export {
   signNockchainTxWithMpc,
 } from './mpc.js';
 export type {MpcAddress, MpcSigner} from './mpc.js';
+
+export {
+  digestFromBase58,
+  digestToBase58,
+  digestToMessageBytes,
+  digestFromMessageBytes,
+} from './core/digest.js';
+export type {DigestBelts} from './core/digest.js';
